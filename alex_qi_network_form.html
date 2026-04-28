@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alex Qi · 网络需求收集</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: #F5F7F5;
+    min-height: 100vh;
+    padding: 16px;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* 表单卡片 */
+  .form-card {
+    background: #FFFFFF;
+    border: 1px solid #C9D6CB;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(31, 48, 36, 0.08);
+  }
+
+  /* 头部 */
+  .header {
+    background: #E8EFE9;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #C9D6CB;
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    margin: 0 auto 10px;
+    overflow: hidden;
+    border: 1px solid #3D5A45;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .brand-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1F3024;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .brand-tag {
+    display: inline-block;
+    padding: 3px 12px;
+    background: #1F3024;
+    color: #E8EFE9;
+    font-size: 10px;
+    letter-spacing: 2px;
+    border-radius: 3px;
+  }
+
+  .form-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: #1F3024;
+    margin-top: 12px;
+    letter-spacing: 1px;
+  }
+
+  /* 表单主体 */
+  .form-body {
+    padding: 24px 20px;
+  }
+
+  .question-group {
+    margin-bottom: 28px;
+  }
+
+  .question-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1F3024;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .required {
+    color: #C0392B;
+    font-size: 14px;
+  }
+
+  .question-desc {
+    font-size: 12px;
+    color: #6B8A72;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  /* 输入框样式 */
+  .input-group {
+    position: relative;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #C9D6CB;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #FAFBFA;
+    transition: all 0.2s;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #3D5A45;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(61, 90, 69, 0.1);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  /* 选择按钮组 */
+  .button-group {
+    display: grid;
+    gap: 8px;
+  }
+
+  .button-group.cols-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .button-group.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .choice-btn {
+    padding: 12px 10px;
+    border: 1px solid #C9D6CB;
+    background: #FAFBFA;
+    color: #3D5A45;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    font-family: inherit;
+  }
+
+  .choice-btn:hover {
+    border-color: #3D5A45;
+    background: #F0F5F1;
+  }
+
+  .choice-btn.active {
+    border-color: #1F3024;
+    background: #1F3024;
+    color: #FFFFFF;
+  }
+
+  /* 多选复选框 */
+  .checkbox-group {
+    display: grid;
+    gap: 10px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #C9D6CB;
+    border-radius: 8px;
+    background: #FAFBFA;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .checkbox-item:hover {
+    border-color: #3D5A45;
+    background: #F0F5F1;
+  }
+
+  .checkbox-item.checked {
+    border-color: #1F3024;
+    background: #E8EFE9;
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #1F3024;
+  }
+
+  .checkbox-label {
+    flex: 1;
+    font-size: 13px;
+    color: #1F3024;
+    font-weight: 500;
+  }
+
+  /* 提交按钮 */
+  .submit-section {
+    padding: 20px;
+    border-top: 1px solid #C9D6CB;
+    background: #FAFBFA;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: #1F3024;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(31, 48, 36, 0.15);
+  }
+
+  .submit-btn:hover {
+    background: #2A4032;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(31, 48, 36, 0.2);
+  }
+
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  .submit-btn:disabled {
+    background: #B5C4B7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* 结果页面 */
+  .result-card {
+    display: none;
+    background: #FFFFFF;
+    border: 1px solid #C9D6CB;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(31, 48, 36, 0.08);
+  }
+
+  .result-header {
+    background: #1F3024;
+    color: #FFFFFF;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .result-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .result-subtitle {
+    font-size: 12px;
+    color: #B5C4B7;
+    letter-spacing: 2px;
+  }
+
+  .result-body {
+    padding: 24px 20px;
+  }
+
+  .result-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E8EFE9;
+  }
+
+  .result-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .result-label {
+    font-size: 12px;
+    color: #6B8A72;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .result-value {
+    font-size: 14px;
+    color: #1F3024;
+    font-weight: 500;
+  }
+
+  .result-value.multi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .result-tag {
+    padding: 2px 8px;
+    background: #E8EFE9;
+    border: 1px solid #C9D6CB;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #1F3024;
+  }
+
+  .actions {
+    padding: 20px;
+    border-top: 1px solid #C9D6CB;
+    background: #FAFBFA;
+    display: flex;
+    gap: 10px;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #3D5A45;
+    background: #FFFFFF;
+    color: #3D5A45;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .action-btn:hover {
+    background: #3D5A45;
+    color: #FFFFFF;
+  }
+
+  .action-btn.primary {
+    background: #1F3024;
+    color: #FFFFFF;
+    border-color: #1F3024;
+  }
+
+  .action-btn.primary:hover {
+    background: #2A4032;
+  }
+
+  .note {
+    background: #F0F5F1;
+    border: 1px solid #C9D6CB;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #3D5A45;
+    line-height: 1.5;
+  }
+
+  .hidden { display: none !important; }
+
+  /* 手机适配 */
+  @media (max-width: 400px) {
+    .container { padding: 12px; }
+    .form-body { padding: 20px 16px; }
+    .button-group.cols-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 表单页面 -->
+  <div class="form-card" id="formCard">
+    <!-- 头部 -->
+    <div class="header">
+      <div class="avatar">
+        <img id="avatarImg" src="" alt="Alex Qi">
+      </div>
+      <div class="brand-name">Alex Qi</div>
+      <div class="brand-tag">合同严选</div>
+      <div class="form-title">网络需求收集</div>
+    </div>
+
+    <!-- 表单主体 -->
+    <div class="form-body">
+      <form id="networkForm">
+        
+        <!-- 1. 基本信息 -->
+        <div class="question-group">
+          <div class="question-title">
+            📍 你的邮编 <span class="required">*</span>
+          </div>
+          <div class="question-desc">
+            用来确认你所在区域的技术覆盖情况
+          </div>
+          <div class="input-group">
+            <input type="text" name="postcode" class="form-input" placeholder="例：10115" required>
+          </div>
+        </div>
+
+        <!-- 1.1 详细地址 -->
+        <div class="question-group">
+          <div class="question-title">
+            🏠 街道地址 <span class="required">*</span>
+          </div>
+          <div class="question-desc">
+            精确地址有助于查询技术覆盖和安装可行性
+          </div>
+          <div style="margin-bottom: 8px;">
+            <input type="text" name="street_name" class="form-input" placeholder="街道名称，如：Unter den Linden" required>
+          </div>
+          <div>
+            <input type="text" name="house_number" class="form-input" placeholder="街道号，如：1 或 15A" required>
+          </div>
+        </div>
+
+        <!-- 2. 居住情况 -->
+        <div class="question-group">
+          <div class="question-title">
+            🏠 居住人数 <span class="required">*</span>
+          </div>
+          <div class="question-desc">
+            帮助我推荐合适的带宽套餐
+          </div>
+          <div class="button-group cols-2">
+            <button type="button" class="choice-btn" data-value="1人">1人</button>
+            <button type="button" class="choice-btn" data-value="2人">2人</button>
+            <button type="button" class="choice-btn" data-value="3-4人">3-4人</button>
+            <button type="button" class="choice-btn" data-value="合租">合租</button>
+          </div>
+          <input type="hidden" name="people" required>
+        </div>
+
+        <!-- 3. 现有合同状况 -->
+        <div class="question-group">
+          <div class="question-title">
+            📡 现在有宽带合同吗？ <span class="required">*</span>
+          </div>
+          <div class="button-group cols-2">
+            <button type="button" class="choice-btn" data-value="没有">没有宽带</button>
+            <button type="button" class="choice-btn" data-value="有合同">有合同在跑</button>
+          </div>
+          <input type="hidden" name="has_contract" required>
+        </div>
+
+        <!-- 3.1 现有合同详情（条件显示） -->
+        <div class="question-group" id="contractDetails" style="display:none;">
+          <div class="question-title">
+            📋 现有合同信息
+          </div>
+          <div class="question-desc">
+            方便我判断换约时机和违约成本
+          </div>
+          <div style="margin-bottom: 12px;">
+            <input type="text" name="current_provider" class="form-input" placeholder="现在的供应商（如：O2, Vodafone）">
+          </div>
+          <div>
+            <input type="text" name="contract_end" class="form-input" placeholder="合同还剩几个月到期">
+          </div>
+        </div>
+
+        <!-- 4. 技术偏好 -->
+        <div class="question-group">
+          <div class="question-title">
+            🔧 技术偏好 <span class="required">*</span>
+          </div>
+          <div class="question-desc">
+            不同技术的稳定性和速度有差异
+          </div>
+          
+          <div class="button-group">
+            <button type="button" class="choice-btn" data-value="无所谓">无所谓，你推荐</button>
+            <button type="button" class="choice-btn" data-value="DSL">DSL · 速度一般但稳定</button>
+            <button type="button" class="choice-btn" data-value="Kabel">Kabel · 价格便宜但可能拥堵</button>
+            <button type="button" class="choice-btn" data-value="Glasfaser">Glasfaser · 技术最好但覆盖有限</button>
+          </div>
+          <input type="hidden" name="tech_preference" required>
+        </div>
+
+        <!-- 5. 供应商偏好 -->
+        <div class="question-group">
+          <div class="question-title">
+            🏢 供应商偏好
+          </div>
+          <div class="question-desc">
+            可多选，我会优先从这些里面选
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" name="preferred_providers" value="O2">
+              <span class="checkbox-label">O2</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="preferred_providers" value="Vodafone">
+              <span class="checkbox-label">Vodafone</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="preferred_providers" value="1&1">
+              <span class="checkbox-label">1&1</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="preferred_providers" value="Telekom">
+              <span class="checkbox-label">Telekom</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="preferred_providers" value="其他">
+              <span class="checkbox-label">其他</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="preferred_providers" value="都可以">
+              <span class="checkbox-label">都可以</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 6. 优先考虑 -->
+        <div class="question-group">
+          <div class="question-title">
+            ⚡ 你最在意什么？ <span class="required">*</span>
+          </div>
+          <div class="button-group">
+            <button type="button" class="choice-btn" data-value="价格最低">价格最低</button>
+            <button type="button" class="choice-btn" data-value="速度最快">速度最快</button>
+            <button type="button" class="choice-btn" data-value="品牌可靠">品牌可靠</button>
+          </div>
+          <input type="hidden" name="priority" required>
+        </div>
+
+        <!-- 7. 特殊需求（可选） -->
+        <div class="question-group">
+          <div class="question-title">
+            💭 其他需求或疑问
+          </div>
+          <div class="question-desc">
+            比如预算范围、特殊速度要求、或任何想问的（选填）
+          </div>
+          <div class="input-group">
+            <textarea name="additional_info" class="form-input form-textarea" placeholder="比如：预算不超过35欧/月、需要上传视频、经常出差需要移动热点..."></textarea>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- 提交按钮 -->
+    <div class="submit-section">
+      <button type="submit" form="networkForm" class="submit-btn" id="submitBtn">
+        📨 提交需求信息
+      </button>
+    </div>
+  </div>
+
+  <!-- 结果页面 -->
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="result-title">需求已收集完成</div>
+      <div class="result-subtitle">ALEX QI · 网络需求分析</div>
+    </div>
+    <div class="result-body" id="resultContent">
+      <!-- 动态生成内容 -->
+    </div>
+    <div class="actions">
+      <button class="action-btn" onclick="copyResult()">📋 复制</button>
+      <button class="action-btn" onclick="shareResult()">📤 转发</button>
+      <button class="action-btn primary" onclick="restartForm()">🔄 重新填写</button>
+    </div>
+    <div class="note">
+      💡 请将此信息转发给 Alex，我会在24小时内回复你专属的套餐推荐
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 头像 base64 嵌入
+  const avatarBase64 = "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";
+  document.getElementById('avatarImg').src = "data:image/jpeg;base64," + avatarBase64;
+
+  let formData = {};
+
+  // 单选按钮组处理
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('choice-btn')) {
+      const group = e.target.closest('.question-group');
+      const hiddenInput = group.querySelector('input[type="hidden"]');
+      const allBtns = group.querySelectorAll('.choice-btn');
+      
+      // 清除其他按钮的选中状态
+      allBtns.forEach(btn => btn.classList.remove('active'));
+      
+      // 选中当前按钮
+      e.target.classList.add('active');
+      
+      // 更新隐藏域值
+      if (hiddenInput) {
+        hiddenInput.value = e.target.dataset.value;
+      }
+
+      // 特殊逻辑：显示/隐藏现有合同详情
+      if (hiddenInput && hiddenInput.name === 'has_contract') {
+        const contractDetails = document.getElementById('contractDetails');
+        if (e.target.dataset.value === '有合同') {
+          contractDetails.style.display = 'block';
+        } else {
+          contractDetails.style.display = 'none';
+          // 清空现有合同信息
+          contractDetails.querySelectorAll('input').forEach(input => input.value = '');
+        }
+      }
+    }
+  });
+
+  // 复选框处理
+  document.addEventListener('change', (e) => {
+    if (e.target.type === 'checkbox' && e.target.name === 'preferred_providers') {
+      const item = e.target.closest('.checkbox-item');
+      item.classList.toggle('checked', e.target.checked);
+
+      // 如果选择了"都可以"，清除其他选项
+      if (e.target.value === '都可以' && e.target.checked) {
+        const group = e.target.closest('.checkbox-group');
+        group.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          if (cb !== e.target) {
+            cb.checked = false;
+            cb.closest('.checkbox-item').classList.remove('checked');
+          }
+        });
+      } else if (e.target.checked) {
+        // 如果选择了其他选项，清除"都可以"
+        const group = e.target.closest('.checkbox-group');
+        const allOption = group.querySelector('input[value="都可以"]');
+        if (allOption && allOption.checked) {
+          allOption.checked = false;
+          allOption.closest('.checkbox-item').classList.remove('checked');
+        }
+      }
+    }
+  });
+
+  // 表单提交处理
+  document.getElementById('networkForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('submitBtn');
+    const formCard = document.getElementById('formCard');
+    const resultCard = document.getElementById('resultCard');
+    
+    // 收集表单数据
+    const form = e.target;
+    const data = new FormData(form);
+    
+    // 处理复选框组
+    const checkedProviders = Array.from(form.querySelectorAll('input[name="preferred_providers"]:checked'))
+      .map(cb => cb.value);
+    
+    formData = {
+      postcode: data.get('postcode'),
+      street_name: data.get('street_name'),
+      house_number: data.get('house_number'),
+      people: data.get('people'),
+      has_contract: data.get('has_contract'),
+      current_provider: data.get('current_provider') || '',
+      contract_end: data.get('contract_end') || '',
+      tech_preference: data.get('tech_preference'),
+      preferred_providers: checkedProviders.length > 0 ? checkedProviders : ['都可以'],
+      priority: data.get('priority'),
+      additional_info: data.get('additional_info') || ''
+    };
+    
+    // 显示加载状态
+    submitBtn.textContent = '⏳ 处理中...';
+    submitBtn.disabled = true;
+    
+    // 模拟处理时间
+    setTimeout(() => {
+      generateResult();
+      formCard.style.display = 'none';
+      resultCard.style.display = 'block';
+    }, 1500);
+  });
+
+  function generateResult() {
+    const content = document.getElementById('resultContent');
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // 生成智能推荐建议
+    let recommendation = '';
+    if (formData.tech_preference === 'Glasfaser') {
+      recommendation = '建议优先查找 Glasfaser 覆盖，技术最佳但需确认当地可用性';
+    } else if (formData.tech_preference === 'DSL') {
+      recommendation = '建议关注 DSL 套餐，稳定可靠，适合日常使用';
+    } else if (formData.tech_preference === 'Kabel') {
+      recommendation = '建议查找 Kabel 方案，价格优势明显，注意避开高峰拥堵';
+    } else if (formData.priority === '价格最低') {
+      recommendation = '建议关注 O2 和 1&1 的优惠套餐';
+    } else if (formData.priority === '速度最快') {
+      recommendation = '建议优先考虑 Glasfaser 或高速 Kabel 方案';
+    } else if (formData.priority === '品牌可靠') {
+      recommendation = '建议优先考虑 Telekom 或 Vodafone';
+    } else {
+      recommendation = '将根据你的区域覆盖情况推荐最适合的方案';
+    }
+
+    content.innerHTML = `
+      <div class="result-section">
+        <div class="result-label">基本信息</div>
+        <div class="result-value">
+          ${formData.street_name} ${formData.house_number}<br>
+          ${formData.postcode} · ${formData.people}
+        </div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">现状</div>
+        <div class="result-value">
+          ${formData.has_contract === '没有' ? '目前无宽带合同' : 
+            `现用 ${formData.current_provider || '未知供应商'}${formData.contract_end ? '，' + formData.contract_end + '到期' : ''}`}
+        </div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">技术偏好</div>
+        <div class="result-value">${formData.tech_preference}</div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">供应商偏好</div>
+        <div class="result-value multi">
+          ${formData.preferred_providers.map(p => `<span class="result-tag">${p}</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">优先考虑</div>
+        <div class="result-value">${formData.priority}</div>
+      </div>
+
+      ${formData.additional_info ? `
+      <div class="result-section">
+        <div class="result-label">补充信息</div>
+        <div class="result-value">${formData.additional_info}</div>
+      </div>
+      ` : ''}
+
+      <div class="result-section">
+        <div class="result-label">Alex 的初步建议</div>
+        <div class="result-value">${recommendation}</div>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">收集时间</div>
+        <div class="result-value">${dateStr}</div>
+      </div>
+    `;
+  }
+
+  function copyResult() {
+    const resultText = generateResultText();
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(resultText).then(() => {
+        showToast('✓ 已复制到剪贴板');
+      }).catch(() => {
+        fallbackCopy(resultText);
+      });
+    } else {
+      fallbackCopy(resultText);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      showToast('✓ 已复制到剪贴板');
+    } catch (err) {
+      showToast('❌ 复制失败，请手动复制');
+    }
+    document.body.removeChild(textarea);
+  }
+
+  function shareResult() {
+    const resultText = generateResultText();
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Alex Qi · 网络需求分析',
+        text: resultText
+      }).catch(console.error);
+    } else {
+      // 降级到复制
+      copyResult();
+    }
+  }
+
+  function generateResultText() {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    let recommendation = '';
+    if (formData.tech_preference === 'Glasfaser') {
+      recommendation = '建议优先查找 Glasfaser 覆盖，技术最佳但需确认当地可用性';
+    } else if (formData.tech_preference === 'DSL') {
+      recommendation = '建议关注 DSL 套餐，稳定可靠，适合日常使用';
+    } else if (formData.tech_preference === 'Kabel') {
+      recommendation = '建议查找 Kabel 方案，价格优势明显，注意避开高峰拥堵';
+    } else if (formData.priority === '价格最低') {
+      recommendation = '建议关注 O2 和 1&1 的优惠套餐';
+    } else if (formData.priority === '速度最快') {
+      recommendation = '建议优先考虑 Glasfaser 或高速 Kabel 方案';
+    } else if (formData.priority === '品牌可靠') {
+      recommendation = '建议优先考虑 Telekom 或 Vodafone';
+    } else {
+      recommendation = '将根据你的区域覆盖情况推荐最适合的方案';
+    }
+
+    return `🌐 Alex Qi · 网络需求分析
+
+📍 基本信息
+地址：${formData.street_name} ${formData.house_number}
+邮编：${formData.postcode}
+居住人数：${formData.people}
+
+📡 现状
+${formData.has_contract === '没有' ? '目前无宽带合同' : 
+  `现用 ${formData.current_provider || '未知供应商'}${formData.contract_end ? '，' + formData.contract_end + '到期' : ''}`}
+
+🔧 技术偏好：${formData.tech_preference}
+
+🏢 供应商偏好：${formData.preferred_providers.join('、')}
+
+⚡ 优先考虑：${formData.priority}
+
+${formData.additional_info ? `💭 补充信息：${formData.additional_info}\n` : ''}
+🎯 Alex 的初步建议
+${recommendation}
+
+⏰ 收集时间：${dateStr}
+
+---
+Alex Qi · 合同严选 · 让繁琐变简单`;
+  }
+
+  function restartForm() {
+    const submitBtn = document.getElementById('submitBtn');
+    const formCard = document.getElementById('formCard');
+    const resultCard = document.getElementById('resultCard');
+    
+    // 重置表单
+    document.getElementById('networkForm').reset();
+    
+    // 清除所有选中状态
+    document.querySelectorAll('.choice-btn.active').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    document.querySelectorAll('.checkbox-item.checked').forEach(item => {
+      item.classList.remove('checked');
+    });
+    
+    // 隐藏合同详情
+    document.getElementById('contractDetails').style.display = 'none';
+    
+    // 重置按钮状态
+    submitBtn.textContent = '📨 提交需求信息';
+    submitBtn.disabled = false;
+    
+    // 清空 formData
+    formData = {};
+    
+    // 切换页面
+    resultCard.style.display = 'none';
+    formCard.style.display = 'block';
+    
+    // 滚动到顶部
+    window.scrollTo(0, 0);
+  }
+
+  function showToast(message) {
+    // 简单的提示实现
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1F3024;
+      color: #FFFFFF;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 2000);
+  }
+</script>
+
+</body>
+</html>
