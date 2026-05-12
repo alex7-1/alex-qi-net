@@ -597,7 +597,7 @@
     <!-- 提交按钮 -->
     <div class="submit-section">
       <button type="submit" form="networkForm" class="submit-btn" id="submitBtn">
-        📨 提交需求信息
+        📋 点击复制发给 Alex
       </button>
     </div>
   </div>
@@ -711,8 +711,6 @@
     e.preventDefault();
     
     const submitBtn = document.getElementById('submitBtn');
-    const formCard = document.getElementById('formCard');
-    const resultCard = document.getElementById('resultCard');
     
     // 收集表单数据
     const form = e.target;
@@ -740,16 +738,17 @@
       additional_info: data.get('additional_info') || ''
     };
     
-    // 显示加载状态
-    submitBtn.textContent = '⏳ 处理中...';
+    // 直接复制整理后的信息，不再跳转确认页
+    submitBtn.textContent = '📋 正在复制...';
     submitBtn.disabled = true;
-    
-    // 模拟处理时间
-    setTimeout(() => {
-      generateResult();
-      formCard.style.display = 'none';
-      resultCard.style.display = 'block';
-    }, 1500);
+
+    copyResult().then((copied) => {
+      submitBtn.textContent = copied ? '✓ 已复制，发给 Alex' : '复制失败，请手动复制';
+      setTimeout(() => {
+        submitBtn.textContent = '📋 点击复制发给 Alex';
+        submitBtn.disabled = false;
+      }, 1800);
+    });
   });
 
   function generateResult() {
@@ -838,14 +837,15 @@
     const resultText = generateResultText();
     
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(resultText).then(() => {
+      return navigator.clipboard.writeText(resultText).then(() => {
         showToast('✓ 已复制到剪贴板');
+        return true;
       }).catch(() => {
-        fallbackCopy(resultText);
+        return fallbackCopy(resultText);
       });
-    } else {
-      fallbackCopy(resultText);
     }
+
+    return Promise.resolve(fallbackCopy(resultText));
   }
 
   function fallbackCopy(text) {
@@ -856,10 +856,13 @@
     try {
       document.execCommand('copy');
       showToast('✓ 已复制到剪贴板');
+      return true;
     } catch (err) {
       showToast('❌ 复制失败，请手动复制');
+      return false;
+    } finally {
+      document.body.removeChild(textarea);
     }
-    document.body.removeChild(textarea);
   }
 
   function shareResult() {
@@ -950,7 +953,7 @@ Alex Qi · 合同严选 · 让繁琐变简单`;
     document.getElementById('contractDetails').style.display = 'none';
     
     // 重置按钮状态
-    submitBtn.textContent = '📨 提交需求信息';
+    submitBtn.textContent = '📋 点击复制发给 Alex';
     submitBtn.disabled = false;
     
     // 清空 formData
