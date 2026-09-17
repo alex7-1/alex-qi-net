@@ -336,6 +336,9 @@
   }
 
   .action-btn {
+    display: block;
+    text-align: center;
+    text-decoration: none;
     flex: 1;
     padding: 12px;
     border: 1px solid #3D5A45;
@@ -375,6 +378,19 @@
     line-height: 1.5;
   }
 
+  .selected-offer {
+    padding: 16px;
+    margin-bottom: 22px;
+    background: #E8EFE9;
+    border: 1px solid #C9D6CB;
+    border-radius: 8px;
+    color: #1F3024;
+  }
+  .selected-offer strong { display: block; font-size: 15px; margin-bottom: 5px; }
+  .selected-offer p { font-size: 13px; }
+  .form-error { color: #A12622; font-size: 13px; margin-top: 10px; min-height: 20px; }
+  .privacy-note { color: #6B8A72; font-size: 12px; margin-top: 10px; line-height: 1.5; }
+
   .hidden { display: none !important; }
 
   /* 手机适配 */
@@ -402,7 +418,21 @@
 
     <!-- 表单主体 -->
     <div class="form-body">
+      <div class="selected-offer hidden" id="selectedOffer" aria-live="polite">
+        <strong>已选宽带套餐</strong>
+        <p id="selectedOfferSummary"></p>
+        <p>展示价与实际覆盖仍需 Alex 复核；提交资料不等于已与运营商签约。</p>
+      </div>
       <form id="networkForm">
+        <div class="question-group">
+          <div class="question-title">👤 你的称呼 <span class="required">*</span></div>
+          <input type="text" name="customerName" class="form-input" autocomplete="name" maxlength="80" required>
+        </div>
+        <div class="question-group">
+          <div class="question-title">☎️ 联系方式（手机号或邮箱）<span class="required">*</span></div>
+          <div class="question-desc">仅用于 Alex 跟你核对宽带办理条件，不需要填微信号。</div>
+          <input type="text" name="contactInfo" class="form-input" autocomplete="tel" maxlength="120" placeholder="例如 +49 170 1234567 或 name@example.com" required>
+        </div>
         
         <!-- 1. 基本信息 -->
         <div class="question-group">
@@ -415,6 +445,11 @@
           <div class="input-group">
             <input type="text" name="postcode" class="form-input" placeholder="例：10115" required>
           </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-title">🏙️ 城市 <span class="required">*</span></div>
+          <input type="text" name="city" class="form-input" autocomplete="address-level2" required>
         </div>
 
         <!-- 1.1 详细地址 -->
@@ -436,7 +471,7 @@
         <!-- 2. 居住情况 -->
         <div class="question-group">
           <div class="question-title">
-            🏠 居住人数 <span class="required">*</span>
+            🏠 居住人数
           </div>
           <div class="question-desc">
             帮助我推荐合适的带宽套餐
@@ -447,19 +482,19 @@
             <button type="button" class="choice-btn" data-value="3-4人">3-4人</button>
             <button type="button" class="choice-btn" data-value="合租">合租</button>
           </div>
-          <input type="hidden" name="people" required>
+          <input type="hidden" name="people">
         </div>
 
         <!-- 3. 现有合同状况 -->
         <div class="question-group">
           <div class="question-title">
-            📡 现在有宽带合同吗？ <span class="required">*</span>
+            📡 现在有宽带合同吗？
           </div>
           <div class="button-group cols-2">
             <button type="button" class="choice-btn" data-value="没有">没有宽带</button>
             <button type="button" class="choice-btn" data-value="有合同">有合同在跑</button>
           </div>
-          <input type="hidden" name="has_contract" required>
+          <input type="hidden" name="has_contract">
         </div>
 
         <!-- 3.1 现有合同详情（条件显示） -->
@@ -514,7 +549,7 @@
         <!-- 4. 技术偏好 -->
         <div class="question-group">
           <div class="question-title">
-            🔧 技术偏好 <span class="required">*</span>
+            🔧 技术偏好
           </div>
           <div class="question-desc">
             不同技术的稳定性和速度有差异
@@ -526,7 +561,7 @@
             <button type="button" class="choice-btn" data-value="Kabel">Kabel · 价格便宜但可能拥堵</button>
             <button type="button" class="choice-btn" data-value="Glasfaser">Glasfaser · 技术最好但覆盖有限</button>
           </div>
-          <input type="hidden" name="tech_preference" required>
+          <input type="hidden" name="tech_preference">
         </div>
 
         <!-- 5. 供应商偏好 -->
@@ -555,6 +590,10 @@
               <span class="checkbox-label">Telekom</span>
             </label>
             <label class="checkbox-item">
+              <input type="checkbox" name="preferred_providers" value="NetAachen">
+              <span class="checkbox-label">NetAachen</span>
+            </label>
+            <label class="checkbox-item">
               <input type="checkbox" name="preferred_providers" value="其他">
               <span class="checkbox-label">其他</span>
             </label>
@@ -568,14 +607,14 @@
         <!-- 6. 优先考虑 -->
         <div class="question-group">
           <div class="question-title">
-            ⚡ 你最在意什么？ <span class="required">*</span>
+            ⚡ 你最在意什么？
           </div>
           <div class="button-group">
             <button type="button" class="choice-btn" data-value="价格最低">价格最低</button>
             <button type="button" class="choice-btn" data-value="速度最快">速度最快</button>
             <button type="button" class="choice-btn" data-value="品牌可靠">品牌可靠</button>
           </div>
-          <input type="hidden" name="priority" required>
+          <input type="hidden" name="priority">
         </div>
 
         <!-- 7. 特殊需求（可选） -->
@@ -597,27 +636,25 @@
     <!-- 提交按钮 -->
     <div class="submit-section">
       <button type="submit" form="networkForm" class="submit-btn" id="submitBtn">
-        📋 点击复制发给 Alex
+        确认办理意向，发送给 Alex
       </button>
+      <p class="form-error" id="formError" role="alert"></p>
+      <p class="privacy-note">你填写的信息将发送给 Alex，用于联系你核对宽带办理条件；此处不是运营商的正式签约页面。</p>
     </div>
   </div>
 
   <!-- 结果页面 -->
   <div class="result-card" id="resultCard">
     <div class="result-header">
-      <div class="result-title">需求已收集完成</div>
-      <div class="result-subtitle">ALEX QI · 网络需求分析</div>
+      <div class="result-title">Alex 已收到你的信息</div>
+      <div class="result-subtitle">ALEX QI · 宽带办理意向</div>
     </div>
-    <div class="result-body" id="resultContent">
-      <!-- 动态生成内容 -->
-    </div>
+    <div class="result-body" id="resultContent">Alex 稍后会联系你，核对最终价格、线路覆盖和办理条件。</div>
     <div class="actions">
-      <button class="action-btn" onclick="copyResult()">📋 复制</button>
-      <button class="action-btn" onclick="shareResult()">📤 转发</button>
-      <button class="action-btn primary" onclick="restartForm()">🔄 重新填写</button>
+      <a class="action-btn primary" href="https://alexqi01.jidingding.cn/xiaoq-current/network-intake.html">返回小Q宽带比价</a>
     </div>
     <div class="note">
-      💡 请将此信息转发给 Alex，我会在24小时内回复你专属的套餐推荐
+      展示报价仍需复核。Alex 联系你确认前，不会自动与运营商签约。
     </div>
   </div>
 
@@ -630,6 +667,38 @@
   document.getElementById('avatarImg').src = "data:image/jpeg;base64," + avatarBase64;
 
   let formData = {};
+  let selectedOffer = null;
+  const handoffPrefix = '#selection=';
+  if (location.hash.startsWith(handoffPrefix)) {
+    try {
+      const encoded = location.hash.slice(handoffPrefix.length);
+      if (encoded.length > 3000) throw new Error('Selection too long');
+      const selection = JSON.parse(decodeURIComponent(encoded));
+      if (selection.v !== 1 || !selection.provider || !selection.name || !selection.technology || !selection.speed) {
+        throw new Error('Invalid selection');
+      }
+      selectedOffer = selection;
+      const form = document.getElementById('networkForm');
+      for (const [field, value] of Object.entries({
+        postcode: selection.postcode, city: selection.city,
+        street_name: selection.streetName, house_number: selection.houseNumber
+      })) {
+        if (typeof value === 'string' && form.elements[field]) form.elements[field].value = value.slice(0, 120);
+      }
+      form.elements.tech_preference.value = String(selection.technology).slice(0, 40);
+      const techButton = Array.from(form.querySelectorAll('.choice-btn[data-value]'))
+        .find((button) => button.closest('.question-group')?.querySelector('[name="tech_preference"]') && button.dataset.value === selection.technology);
+      techButton?.classList.add('active');
+      const provider = Array.from(form.querySelectorAll('[name="preferred_providers"]'))
+        .find((input) => input.value === selection.provider);
+      if (provider) { provider.checked = true; provider.closest('.checkbox-item').classList.add('checked'); }
+      document.getElementById('selectedOfferSummary').textContent =
+        `${selection.provider} · ${selection.name} · ${selection.technology} ${selection.speed} Mbit/s · 24 个月月均 ${selection.monthly} €（参考价）`;
+      document.getElementById('selectedOffer').classList.remove('hidden');
+    } catch { selectedOffer = null; }
+    // Keep the address and quote out of browser history after the handoff is read.
+    history.replaceState(null, '', location.pathname + location.search);
+  }
 
   // 单选按钮组处理
   document.addEventListener('click', (e) => {
@@ -707,48 +776,83 @@
   });
 
   // 表单提交处理
-  document.getElementById('networkForm').addEventListener('submit', (e) => {
+  document.getElementById('networkForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const submitBtn = document.getElementById('submitBtn');
-    
-    // 收集表单数据
+    const error = document.getElementById('formError');
+    error.textContent = '';
     const form = e.target;
     const data = new FormData(form);
-    
-    // 处理复选框组
+    const contactInfo = String(data.get('contactInfo') || '').trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo);
+    const isPhone = /^\+?[0-9][0-9\s()/-]{5,}$/.test(contactInfo);
+    if (!isEmail && !isPhone) {
+      error.textContent = '请填写可联系到你的手机号或电子邮箱。';
+      form.elements.contactInfo.focus();
+      return;
+    }
+    if (!/^\d{5}$/.test(String(data.get('postcode') || '').trim())) {
+      error.textContent = '请填写 5 位德国邮编。';
+      form.elements.postcode.focus();
+      return;
+    }
     const checkedProviders = Array.from(form.querySelectorAll('input[name="preferred_providers"]:checked'))
       .map(cb => cb.value);
-    
-    formData = {
-      postcode: data.get('postcode'),
-      street_name: data.get('street_name'),
-      house_number: data.get('house_number'),
-      people: data.get('people'),
-      has_contract: data.get('has_contract'),
-      current_provider: data.get('current_provider') === '其他' 
-        ? (data.get('current_provider_other') || '其他') 
-        : (data.get('current_provider') || ''),
-      current_tech: data.get('current_tech') || '',
-      current_speed: data.get('current_speed') || '',
-      contract_end: data.get('contract_end') || '',
-      tech_preference: data.get('tech_preference'),
-      preferred_providers: checkedProviders.length > 0 ? checkedProviders : ['都可以'],
-      priority: data.get('priority'),
-      additional_info: data.get('additional_info') || ''
+    const payload = {
+      source: 'network-application',
+      customerName: String(data.get('customerName') || '').trim(), contactInfo,
+      postcode: String(data.get('postcode') || '').trim(), city: String(data.get('city') || '').trim(),
+      streetName: String(data.get('street_name') || '').trim(), houseNumber: String(data.get('house_number') || '').trim(),
+      people: String(data.get('people') || ''), hasContract: String(data.get('has_contract') || ''),
+      currentProvider: data.get('current_provider') === '其他'
+        ? String(data.get('current_provider_other') || '其他') : String(data.get('current_provider') || ''),
+      currentTech: String(data.get('current_tech') || ''), currentSpeed: String(data.get('current_speed') || ''),
+      contractEnd: String(data.get('contract_end') || ''),
+      techPreference: String(data.get('tech_preference') || ''),
+      preferredProviders: checkedProviders.length ? checkedProviders : ['都可以'],
+      priority: String(data.get('priority') || ''), additionalInfo: String(data.get('additional_info') || ''),
+      selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
+      selectedSpeed: selectedOffer ? String(selectedOffer.speed) : '',
+      selectedOfferMonthly: selectedOffer ? `${selectedOffer.monthly} € / 月（参考价）` : '',
+      selectedOfferTotal: selectedOffer ? `${selectedOffer.total24} € / 24 个月（参考价，待复核）` : '',
+      comparisonSnapshotDate: selectedOffer ? String(selectedOffer.snapshotDate || '') : '',
+      youngStatus: selectedOffer ? String(selectedOffer.youngStatus || '') : '',
+      isStudent: selectedOffer?.youngStatus === 'student' || selectedOffer?.youngStatus === 'azubi' ? '是' : '不确定',
+      hasOwnRouter: selectedOffer ? String(selectedOffer.hasOwnRouter || '') : '',
+      hasActiveO2Contract: selectedOffer ? String(selectedOffer.hasActiveO2Contract || '') : ''
     };
-    
-    // 直接复制整理后的信息，不再跳转确认页
-    submitBtn.textContent = '📋 正在复制...';
+    submitBtn.textContent = '正在发送…';
     submitBtn.disabled = true;
-
-    copyResult().then((copied) => {
-      submitBtn.textContent = copied ? '✓ 已复制，发给 Alex' : '复制失败，请手动复制';
-      setTimeout(() => {
-        submitBtn.textContent = '📋 点击复制发给 Alex';
+    try {
+      const endpoint = location.hostname === 'alex7-1.github.io'
+        ? 'https://alexqi01.jidingding.cn/api/public/network-intake' : '/api/public/network-intake';
+      const response = await fetch(endpoint, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        credentials: 'omit', body: JSON.stringify(payload), signal: AbortSignal.timeout(45000)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.ok !== true || result.status !== 'sent') {
+        if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+          throw new Error(result.error || '请检查填写的信息。');
+        }
+        error.textContent = '暂时无法确认邮件是否送达。请勿重复提交，先联系 Alex 核对。';
+        return;
+      }
+      document.getElementById('resultContent').textContent = selectedOffer
+        ? `${selectedOffer.provider} · ${selectedOffer.name}。Alex 稍后会按你填写的联系方式联系你，核对最终价格与办理条件。`
+        : 'Alex 稍后会按你填写的联系方式联系你，核对可用宽带与办理条件。';
+      document.getElementById('formCard').style.display = 'none';
+      document.getElementById('resultCard').style.display = 'block';
+      window.scrollTo(0, 0);
+    } catch (failure) {
+      if (failure.message === '请检查填写的信息。' || failure.message.startsWith('请填写')) {
+        error.textContent = failure.message;
         submitBtn.disabled = false;
-      }, 1800);
-    });
+        submitBtn.textContent = '确认办理意向，发送给 Alex';
+      } else {
+        error.textContent = '暂时无法确认邮件是否送达。请勿重复提交，先联系 Alex 核对。';
+      }
+    }
   });
 
   function generateResult() {
