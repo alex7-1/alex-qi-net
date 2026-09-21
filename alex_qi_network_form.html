@@ -46,6 +46,16 @@
     input::placeholder { color: #91a2b2; font-weight: 400; }
     .contact-field { margin-top: 16px; }
     .field-note { margin: 7px 0 0; color: #70859a; font-size: 12px; line-height: 1.5; }
+    .address-assist { margin-top: 15px; }
+    .address-status { margin: 0; color: #70859a; font-size: 12px; line-height: 1.5; }
+    .address-suggestions { margin-top: 9px; overflow: hidden; border: 1px solid #bdcedf; border-radius: 11px; background: white; }
+    .address-suggestion { display: block; width: 100%; padding: 12px 14px; border: 0; border-bottom: 1px solid #e6edf5; background: white; color: #17314e; text-align: left; cursor: pointer; }
+    .address-suggestion:last-of-type { border-bottom: 0; }
+    .address-suggestion:hover, .address-suggestion:focus-visible { background: #eef6ff; }
+    .address-suggestion strong, .address-suggestion span { display: block; }
+    .address-suggestion strong { font-size: 13px; }
+    .address-suggestion span { margin-top: 3px; color: #70859a; font-size: 12px; }
+    .address-attribution { padding: 8px 12px; border-top: 1px solid #e6edf5; color: #657b91; font-size: 11px; text-align: right; }
     .submit-card { margin-top: 16px; padding: 20px 22px; border: 1px solid #dce6f1; border-radius: 16px; background: white; box-shadow: 0 5px 18px #163a6509; }
     .submit-card strong { display: block; font-size: 15px; }
     .submit-card p { margin: 5px 0 14px; color: #70859a; font-size: 12px; line-height: 1.6; }
@@ -94,13 +104,15 @@
         </section>
 
         <section class="card" aria-labelledby="address-heading">
-          <div class="card-title"><span class="section-number">02</span><div><h2 id="address-heading">安装地址</h2><p>请核对宽带实际安装的门牌号</p></div></div>
+          <div class="card-title"><span class="section-number">02</span><div><h2 id="address-heading">安装地址</h2><p>输入德国地址并选择匹配结果，自动填入邮编、城市、街道和门牌号</p></div></div>
           <div class="grid">
-            <label><span>邮编 *</span><input name="postcode" inputmode="numeric" maxlength="5" autocomplete="postal-code" required></label>
-            <label><span>城市 *</span><input name="city" autocomplete="address-level2" maxlength="80" required></label>
-            <label><span>街道 *</span><input name="streetName" autocomplete="address-line1" maxlength="120" required></label>
-            <label><span>门牌号 *</span><input name="houseNumber" autocomplete="address-line2" maxlength="20" required></label>
+            <label><span>邮编 *</span><input name="postcode" inputmode="numeric" maxlength="5" autocomplete="off" required placeholder="例如 52062"></label>
+            <label><span>城市 *</span><input name="city" autocomplete="off" maxlength="80" required placeholder="例如 Aachen"></label>
+            <label><span>街道 *</span><input name="streetName" autocomplete="off" maxlength="120" required placeholder="输入街道后选择建议"></label>
+            <label><span>门牌号 *</span><input name="houseNumber" autocomplete="off" maxlength="20" required placeholder="例如 40"></label>
           </div>
+          <input name="placeId" type="hidden">
+          <div class="address-assist"><p class="address-status" id="address-status" role="status">输入邮编、城市或街道，可从匹配的德国地址中选择；也可手动填写。</p><div class="address-suggestions hidden" id="address-suggestions" aria-label="德国地址建议"></div></div>
         </section>
         <div class="submit-card"><strong>准备好了</strong><p>提交后 Alex 会按你填写的联系方式核对地址、最终价格和办理条件；这里不是运营商的签约页面。</p><button class="primary" id="submit-button" type="submit">提交办理意向 →</button><p class="error" id="form-error" role="alert"></p></div>
       </form>
@@ -146,6 +158,109 @@
       history.replaceState(null, '', location.pathname + location.search);
     }
 
+    const addressFields = ['postcode', 'city', 'streetName', 'houseNumber'];
+    const addressStatus = document.querySelector('#address-status');
+    const suggestionsBox = document.querySelector('#address-suggestions');
+    const addressApi = location.hostname === 'alex7-1.github.io' ? 'https://alexqi01.jidingding.cn' : '';
+    let addressTimer;
+    let addressController;
+    let addressRevision = 0;
+
+    function clearSuggestions() {
+      suggestionsBox.replaceChildren();
+      suggestionsBox.classList.add('hidden');
+    }
+
+    for (const field of addressFields) {
+      form.elements[field].addEventListener('input', () => {
+        form.elements.placeId.value = '';
+        clearTimeout(addressTimer);
+        addressController?.abort();
+        const revision = ++addressRevision;
+        const query = [form.elements.streetName.value, form.elements.houseNumber.value, form.elements.city.value]
+          .map((value) => value.trim()).filter(Boolean).join(' ');
+        const postcode = form.elements.postcode.value.trim();
+        if ((query + postcode).replace(/\s/g, '').length < 3) {
+          clearSuggestions();
+          addressStatus.textContent = '继续输入邮编、城市或街道，可从匹配的德国地址中选择。';
+          return;
+        }
+        addressTimer = setTimeout(() => lookupAddress(query, postcode, revision), 320);
+      });
+    }
+
+    async function lookupAddress(query, postcode, revision) {
+      const controller = new AbortController();
+      addressController = controller;
+      try {
+        const params = new URLSearchParams({ q: query, postcode });
+        const response = await fetch(`${addressApi}/api/public/address-suggestions?${params}`, { signal: controller.signal, credentials: 'omit' });
+        const data = await response.json();
+        if (!response.ok) throw new Error('地址联想暂时不可用');
+        if (revision !== addressRevision) return;
+        clearSuggestions();
+        if (!data.enabled) {
+          addressStatus.textContent = '地址联想暂未启用，请手动填写完整地址。';
+          return;
+        }
+        const suggestions = Array.isArray(data.suggestions) ? data.suggestions.slice(0, 5) : [];
+        for (const suggestion of suggestions) {
+          if (!suggestion.placeId || !suggestion.label) continue;
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'address-suggestion';
+          const title = document.createElement('strong');
+          title.textContent = suggestion.mainText || suggestion.label;
+          const subtitle = document.createElement('span');
+          subtitle.textContent = suggestion.secondaryText || suggestion.label;
+          button.append(title, subtitle);
+          button.addEventListener('click', () => selectAddress(suggestion));
+          suggestionsBox.append(button);
+        }
+        if (suggestionsBox.childElementCount) {
+          const attribution = document.createElement('div');
+          attribution.className = 'address-attribution';
+          attribution.textContent = 'Google Maps';
+          suggestionsBox.append(attribution);
+          suggestionsBox.classList.remove('hidden');
+          addressStatus.textContent = '请选择匹配的地址，系统会自动填入地址信息。';
+        } else {
+          addressStatus.textContent = '没有找到匹配地址，可继续输入或手动填写。';
+        }
+      } catch (failure) {
+        if (failure.name === 'AbortError' || revision !== addressRevision) return;
+        clearSuggestions();
+        addressStatus.textContent = '地址联想暂时不可用，请手动填写完整地址。';
+      }
+    }
+
+    async function selectAddress(suggestion) {
+      clearTimeout(addressTimer);
+      addressController?.abort();
+      const revision = ++addressRevision;
+      clearSuggestions();
+      addressStatus.textContent = '正在填入所选地址…';
+      try {
+        const params = new URLSearchParams({ placeId: suggestion.placeId });
+        const response = await fetch(`${addressApi}/api/public/address-details?${params}`, { credentials: 'omit' });
+        const data = await response.json();
+        if (!response.ok || !data.enabled || !data.address) throw new Error('Address details unavailable');
+        if (revision !== addressRevision) return;
+        const address = data.address;
+        form.elements.postcode.value = address.postalCode || '';
+        form.elements.city.value = address.city || '';
+        form.elements.streetName.value = address.streetName || '';
+        form.elements.houseNumber.value = address.houseNumber || '';
+        form.elements.placeId.value = data.placeId || suggestion.placeId;
+        addressStatus.textContent = '地址已选择，请核对门牌号和其他信息。';
+        if (!form.elements.houseNumber.value) form.elements.houseNumber.focus();
+      } catch {
+        if (revision !== addressRevision) return;
+        form.elements.placeId.value = '';
+        addressStatus.textContent = '未能读取地址详情，请手动核对邮编、城市、街道和门牌号。';
+      }
+    }
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       error.textContent = '';
@@ -160,7 +275,7 @@
       if (!/^\d{5}$/.test(postcode)) { error.textContent = '请填写 5 位德国邮编。'; form.elements.postcode.focus(); return; }
       const payload = {
         source: 'network-application', lastName, firstName, customerName: `${lastName} ${firstName}`, contactInfo,
-        postcode, city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim(), houseNumber: form.elements.houseNumber.value.trim(),
+        postcode, city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim(), houseNumber: form.elements.houseNumber.value.trim(), placeId: form.elements.placeId.value,
         selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
         selectedSpeed: selectedOffer ? String(selectedOffer.speed) : '',
         selectedOfferMonthly: selectedOffer ? `${selectedOffer.monthly} € / 月（折算价）` : '',
