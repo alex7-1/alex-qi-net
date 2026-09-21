@@ -56,6 +56,7 @@
     .address-suggestion strong { font-size: 13px; }
     .address-suggestion span { margin-top: 3px; color: #70859a; font-size: 12px; }
     .address-attribution { padding: 8px 12px; border-top: 1px solid #e6edf5; color: #657b91; font-size: 11px; text-align: right; }
+    .address-attribution a { color: #1559a4; }
     .submit-card { margin-top: 16px; padding: 20px 22px; border: 1px solid #dce6f1; border-radius: 16px; background: white; box-shadow: 0 5px 18px #163a6509; }
     .submit-card strong { display: block; font-size: 15px; }
     .submit-card p { margin: 5px 0 14px; color: #70859a; font-size: 12px; line-height: 1.6; }
@@ -104,7 +105,7 @@
         </section>
 
         <section class="card" aria-labelledby="address-heading">
-          <div class="card-title"><span class="section-number">02</span><div><h2 id="address-heading">安装地址</h2><p>输入德国地址并选择匹配结果，自动填入邮编、城市、街道和门牌号</p></div></div>
+          <div class="card-title"><span class="section-number">02</span><div><h2 id="address-heading">安装地址</h2><p>选择匹配的德国地址，自动填入邮编、城市和街道；门牌号请自行填写</p></div></div>
           <div class="grid">
             <label><span>邮编 *</span><input name="postcode" inputmode="numeric" maxlength="5" autocomplete="off" required placeholder="例如 52062"></label>
             <label><span>城市 *</span><input name="city" autocomplete="off" maxlength="80" required placeholder="例如 Aachen"></label>
@@ -158,7 +159,7 @@
       history.replaceState(null, '', location.pathname + location.search);
     }
 
-    const addressFields = ['postcode', 'city', 'streetName', 'houseNumber'];
+    const addressFields = ['postcode', 'city', 'streetName'];
     const addressStatus = document.querySelector('#address-status');
     const suggestionsBox = document.querySelector('#address-suggestions');
     const addressApi = location.hostname === 'alex7-1.github.io' ? 'https://alexqi01.jidingding.cn' : '';
@@ -177,7 +178,7 @@
         clearTimeout(addressTimer);
         addressController?.abort();
         const revision = ++addressRevision;
-        const query = [form.elements.streetName.value, form.elements.houseNumber.value, form.elements.city.value]
+        const query = [form.elements.streetName.value, form.elements.city.value]
           .map((value) => value.trim()).filter(Boolean).join(' ');
         const postcode = form.elements.postcode.value.trim();
         if ((query + postcode).replace(/\s/g, '').length < 3) {
@@ -193,7 +194,8 @@
       const controller = new AbortController();
       addressController = controller;
       try {
-        const params = new URLSearchParams({ q: query, postcode });
+        const params = new URLSearchParams({ q: query, postcode,
+          city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim() });
         const response = await fetch(`${addressApi}/api/public/address-suggestions?${params}`, { signal: controller.signal, credentials: 'omit' });
         const data = await response.json();
         if (!response.ok) throw new Error('地址联想暂时不可用');
@@ -220,12 +222,23 @@
         if (suggestionsBox.childElementCount) {
           const attribution = document.createElement('div');
           attribution.className = 'address-attribution';
-          attribution.textContent = 'Google Maps';
+          if (data.provider === 'openplz') {
+            const link = document.createElement('a');
+            link.href = 'https://www.openplzapi.org/';
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = '地址数据：OpenPLZ API · ODbL';
+            attribution.append(link);
+          } else {
+            attribution.textContent = 'Google Maps';
+          }
           suggestionsBox.append(attribution);
           suggestionsBox.classList.remove('hidden');
-          addressStatus.textContent = '请选择匹配的地址，系统会自动填入地址信息。';
+          addressStatus.textContent = data.provider === 'openplz'
+            ? '请选择邮编、城市和街道；门牌号请自行填写。'
+            : '请选择匹配的地址，系统会自动填入地址信息。';
         } else {
-          addressStatus.textContent = '没有找到匹配地址，可继续输入或手动填写。';
+          addressStatus.textContent = data.message || '没有找到匹配地址，可继续输入或手动填写。';
         }
       } catch (failure) {
         if (failure.name === 'AbortError' || revision !== addressRevision) return;
@@ -252,8 +265,11 @@
         form.elements.streetName.value = address.streetName || '';
         form.elements.houseNumber.value = address.houseNumber || '';
         form.elements.placeId.value = data.placeId || suggestion.placeId;
-        addressStatus.textContent = '地址已选择，请核对门牌号和其他信息。';
-        if (!form.elements.houseNumber.value) form.elements.houseNumber.focus();
+        addressStatus.textContent = data.provider === 'openplz'
+          ? '邮编、城市和街道已填入；请填写门牌号。'
+          : '地址已选择，请核对门牌号和其他信息。';
+        if (!form.elements.streetName.value) form.elements.streetName.focus();
+        else if (!form.elements.houseNumber.value) form.elements.houseNumber.focus();
       } catch {
         if (revision !== addressRevision) return;
         form.elements.placeId.value = '';
