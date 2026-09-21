@@ -421,6 +421,7 @@
       <div class="selected-offer hidden" id="selectedOffer" aria-live="polite">
         <strong>已选宽带套餐</strong>
         <p id="selectedOfferSummary"></p>
+        <p><a id="selectedOfferSourceLink" class="hidden" target="_blank" rel="noopener noreferrer">查看 CHECK24 原报价 ↗</a></p>
         <p>展示价与实际覆盖仍需 Alex 复核；提交资料不等于已与运营商签约。</p>
       </div>
       <form id="networkForm">
@@ -693,7 +694,17 @@
         .find((input) => input.value === selection.provider);
       if (provider) { provider.checked = true; provider.closest('.checkbox-item').classList.add('checked'); }
       document.getElementById('selectedOfferSummary').textContent =
-        `${selection.provider} · ${selection.name} · ${selection.technology} ${selection.speed} Mbit/s · 24 个月月均 ${selection.monthly} €（参考价）`;
+        `${selection.provider} · ${selection.name} · ${selection.technology} ${selection.speed} Mbit/s · 24 个月月均 ${selection.monthly} €（${selection.sourceType === 'check24' ? 'CHECK24 折算参考价' : '运营商参考价'}）`;
+      if (selection.sourceType === 'check24') {
+        try {
+          const source = new URL(selection.sourceUrl);
+          if (source.protocol === 'https:' && source.hostname === 'internet.check24.de' && source.pathname.startsWith('/tariff/')) {
+            const link = document.getElementById('selectedOfferSourceLink');
+            link.href = source.href;
+            link.classList.remove('hidden');
+          }
+        } catch { /* Invalid source links are not shown. */ }
+      }
       document.getElementById('selectedOffer').classList.remove('hidden');
     } catch { selectedOffer = null; }
     // Keep the address and quote out of browser history after the handoff is read.
@@ -814,8 +825,10 @@
       selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
       selectedSpeed: selectedOffer ? String(selectedOffer.speed) : '',
       selectedOfferMonthly: selectedOffer ? `${selectedOffer.monthly} € / 月（参考价）` : '',
-      selectedOfferTotal: selectedOffer ? `${selectedOffer.total24} € / 24 个月（参考价，待复核）` : '',
+      selectedOfferTotal: selectedOffer ? `${selectedOffer.total24} € / 24 个月（${selectedOffer.sourceType === 'check24' ? '折算月均×24 估算，原报价待复核' : '参考价，待复核'}）` : '',
       comparisonSnapshotDate: selectedOffer ? String(selectedOffer.snapshotDate || '') : '',
+      selectedOfferSource: selectedOffer?.sourceType === 'check24' ? 'check24' : 'operator',
+      selectedOfferSourceUrl: selectedOffer?.sourceType === 'check24' ? String(selectedOffer.sourceUrl || '') : '',
       youngStatus: selectedOffer ? String(selectedOffer.youngStatus || '') : '',
       isStudent: selectedOffer?.youngStatus === 'student' || selectedOffer?.youngStatus === 'azubi' ? '是' : '不确定',
       hasOwnRouter: selectedOffer ? String(selectedOffer.hasOwnRouter || '') : '',
