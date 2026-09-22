@@ -125,6 +125,12 @@
     const submitButton = document.querySelector('#submit-button');
     const error = document.querySelector('#form-error');
     let selectedOffer = null;
+    const submissionKey = 'alex-qi-network-application-id';
+    let submissionId = `network-${crypto.randomUUID()}`;
+    try {
+      submissionId = sessionStorage.getItem(submissionKey) || submissionId;
+      sessionStorage.setItem(submissionKey, submissionId);
+    } catch { /* An in-memory ID still protects the current submission attempt. */ }
     const prefix = '#selection=';
     if (location.hash.startsWith(prefix)) {
       try {
@@ -274,9 +280,12 @@
       }
       if (!/^\d{5}$/.test(postcode)) { error.textContent = '请填写 5 位德国邮编。'; form.elements.postcode.focus(); return; }
       const payload = {
-        source: 'network-application', lastName, firstName, customerName: `${lastName} ${firstName}`, contactInfo,
+        source: 'network-application', submissionId, lastName, firstName, customerName: `${lastName} ${firstName}`, contactInfo,
         postcode, city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim(), houseNumber: form.elements.houseNumber.value.trim(), placeId: form.elements.placeId.value,
         selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
+        selectedOfferProvider: selectedOffer ? String(selectedOffer.provider) : '',
+        selectedOfferTechnology: selectedOffer ? String(selectedOffer.technology) : '',
+        selectedOfferDuration: 24,
         selectedSpeed: selectedOffer ? String(selectedOffer.speed) : '',
         selectedOfferMonthly: selectedOffer ? `${selectedOffer.monthly} € / 月（折算价）` : '',
         selectedOfferTotal: selectedOffer ? `${selectedOffer.total24} € / 24 个月（参考）` : '',
@@ -308,6 +317,7 @@
           : 'Alex 会按你填写的联系方式联系你，核对可用宽带与办理条件。';
         document.querySelector('#application-view').classList.add('hidden');
         document.querySelector('#success-view').classList.remove('hidden');
+        try { sessionStorage.removeItem(submissionKey); } catch { /* Storage may be unavailable. */ }
         window.scrollTo(0, 0);
       } catch (failure) {
         if (failure.message.startsWith('请')) {
