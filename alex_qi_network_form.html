@@ -100,8 +100,12 @@
             <label><span>姓 *</span><input name="lastName" autocomplete="family-name" maxlength="50" required placeholder="请输入姓"></label>
             <label><span>名 *</span><input name="firstName" autocomplete="given-name" maxlength="50" required placeholder="请输入名"></label>
           </div>
-          <label class="contact-field"><span>手机号或电子邮箱 *</span><input name="contactInfo" autocomplete="tel" maxlength="120" required placeholder="例如 +49 170 1234567 或 name@example.com"></label>
-          <p class="field-note">只用于这次宽带办理意向的联系。</p>
+          <div class="grid contact-field">
+            <label><span>电子邮箱 *</span><input name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required placeholder="例如 name@example.com"></label>
+            <label><span>手机号（选填）</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="60" placeholder="例如 +49 170 1234567"></label>
+          </div>
+          <label class="contact-field"><span>微信号 *</span><input name="wechatId" autocomplete="nickname" maxlength="100" required placeholder="请输入微信号"></label>
+          <p class="field-note">邮箱用于自动接收所选套餐链接；手机号和微信用于 Alex 联系你核对办理条件。</p>
         </section>
 
         <section class="card" aria-labelledby="address-heading">
@@ -115,11 +119,11 @@
           <input name="placeId" type="hidden">
           <div class="address-assist"><p class="address-status" id="address-status" role="status">输入邮编、城市或街道，可从匹配的德国地址中选择；也可手动填写。</p><div class="address-suggestions hidden" id="address-suggestions" aria-label="德国地址建议"></div></div>
         </section>
-        <div class="submit-card"><strong>准备好了</strong><p>提交后 Alex 会按你填写的联系方式核对地址、最终价格和办理条件；这里不是运营商的签约页面。</p><button class="primary" id="submit-button" type="submit">提交办理意向 →</button><p class="error" id="form-error" role="alert"></p></div>
+        <div class="submit-card"><strong>准备好了</strong><p>提交后，所选套餐的安全链接会自动发送到你的邮箱；Alex 会通过微信或手机号核对地址、最终价格和办理条件。这里不是运营商的签约页面。</p><button class="primary" id="submit-button" type="submit">提交并发送套餐链接 →</button><p class="error" id="form-error" role="alert"></p></div>
       </form>
     </div>
 
-    <section class="card success hidden" id="success-view" aria-live="polite"><span class="q-mark" aria-hidden="true">Q</span><h2>办理意向已发送</h2><p id="success-message">Alex 会按你填写的联系方式联系你，核对最终价格、线路覆盖与办理条件。</p><a class="primary" href="https://alexqi01.jidingding.cn/xiaoq-current/network-intake.html">返回小Q宽带比价</a></section>
+    <section class="card success hidden" id="success-view" aria-live="polite"><span class="q-mark" aria-hidden="true">Q</span><h2>办理意向已发送</h2><p id="success-message">请查收套餐链接邮件；Alex 会通过微信或手机号联系你，核对最终价格、线路覆盖与办理条件。</p><a class="primary" href="https://alexqi01.jidingding.cn/xiaoq-current/network-intake.html">返回小Q宽带比价</a></section>
   </main>
   <script>
     const form = document.querySelector('#application-form');
@@ -288,15 +292,18 @@
       error.textContent = '';
       const lastName = form.elements.lastName.value.trim();
       const firstName = form.elements.firstName.value.trim();
-      const contactInfo = form.elements.contactInfo.value.trim();
+      const email = form.elements.email.value.trim().toLowerCase();
+      const phone = form.elements.phone.value.trim();
+      const wechatId = form.elements.wechatId.value.trim();
       const postcode = form.elements.postcode.value.trim();
       if (!lastName || !firstName) { error.textContent = '请分别填写姓和名。'; return; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo) && !/^\+?[0-9][0-9\s()/-]{5,}$/.test(contactInfo)) {
-        error.textContent = '请填写可联系到你的手机号或电子邮箱。'; form.elements.contactInfo.focus(); return;
-      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = '请填写有效的电子邮箱。'; form.elements.email.focus(); return; }
+      if (phone && !/^\+?[0-9][0-9\s()/-]{5,}$/.test(phone)) { error.textContent = '请填写有效的手机号，或将手机号留空。'; form.elements.phone.focus(); return; }
+      if (!wechatId) { error.textContent = '请填写微信号。'; form.elements.wechatId.focus(); return; }
       if (!/^\d{5}$/.test(postcode)) { error.textContent = '请填写 5 位德国邮编。'; form.elements.postcode.focus(); return; }
       const payload = {
-        source: 'network-application', submissionId, lastName, firstName, customerName: `${lastName} ${firstName}`, contactInfo,
+        source: 'network-application', submissionId, lastName, firstName, customerName: `${lastName} ${firstName}`,
+        email, phone, wechatId, contactInfo: phone || email,
         postcode, city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim(), houseNumber: form.elements.houseNumber.value.trim(), placeId: form.elements.placeId.value,
         selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
         selectedOfferProvider: selectedOffer ? String(selectedOffer.provider) : '',
@@ -328,9 +335,12 @@
           error.textContent = '暂时无法确认是否送达。请勿重复提交，先联系 Alex 核对。';
           return;
         }
-        document.querySelector('#success-message').textContent = selectedOffer
-          ? `${selectedOffer.provider} · ${selectedOffer.name}。Alex 会按你填写的联系方式联系你，核对最终价格与办理条件。`
-          : 'Alex 会按你填写的联系方式联系你，核对可用宽带与办理条件。';
+        const customerLinkSent = result.customerEmail?.status === 'sent';
+        document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
+          ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐链接已发送到 ${email}；Alex 会通过微信或手机号联系你核对最终条件。`
+          : selectedOffer
+            ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；这个套餐目前没有可自动发送的链接，Alex 会联系你核对。`
+            : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
         document.querySelector('#application-view').classList.add('hidden');
         document.querySelector('#success-view').classList.remove('hidden');
         try { sessionStorage.removeItem(submissionKey); } catch { /* Storage may be unavailable. */ }
@@ -339,7 +349,7 @@
         if (failure.message.startsWith('请')) {
           error.textContent = failure.message;
           submitButton.disabled = false;
-          submitButton.textContent = '提交办理意向 →';
+          submitButton.textContent = '提交并发送套餐链接 →';
         } else {
           error.textContent = '暂时无法确认是否送达。请勿重复提交，先联系 Alex 核对。';
         }
