@@ -338,24 +338,26 @@
           ? 'https://alexqi01.jidingding.cn/api/public/network-intake' : '/api/public/network-intake';
         const response = await fetch(endpoint, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'omit',
-          body: JSON.stringify(payload), signal: AbortSignal.timeout(45000)
+          body: JSON.stringify(payload), signal: AbortSignal.timeout(20000)
         });
         const result = await response.json().catch(() => ({}));
-        if (!response.ok || result.ok !== true || result.status !== 'sent') {
-          if (response.status >= 400 && response.status < 500 && response.status !== 429) throw new Error(result.error || '请检查填写的信息。');
-          error.textContent = '暂时无法确认是否送达。请勿重复提交，先联系 Alex 核对。';
-          return;
+        if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+          throw new Error(result.error || '请检查填写的信息。');
         }
         const customerLinkSent = result.customerEmail?.status === 'sent';
-        document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
-          ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐链接已发送到 ${email}；Alex 会通过微信或手机号联系你核对最终条件。`
-          : selectedOffer
-            ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；这个套餐目前没有可自动发送的链接，Alex 会联系你核对。`
-            : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
-        document.querySelector('#application-view').classList.add('hidden');
-        document.querySelector('#success-view').classList.remove('hidden');
-        try { sessionStorage.removeItem(submissionKey); } catch { /* Storage may be unavailable. */ }
-        window.scrollTo(0, 0);
+        if (result.saved === true) {
+          document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
+            ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐链接已发送到 ${email}；Alex 会通过微信或手机号联系你核对最终条件。`
+            : selectedOffer
+              ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；套餐邮件暂未发出，Alex 会通过微信或手机号联系你，请勿重复提交。`
+              : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
+          document.querySelector('#application-view').classList.add('hidden');
+          document.querySelector('#success-view').classList.remove('hidden');
+          try { sessionStorage.removeItem(submissionKey); } catch { /* Storage may be unavailable. */ }
+          window.scrollTo(0, 0);
+          return;
+        }
+        error.textContent = '暂时无法确认是否送达。请勿重复提交，先联系 Alex 核对。';
       } catch (failure) {
         if (failure.message.startsWith('请')) {
           error.textContent = failure.message;
