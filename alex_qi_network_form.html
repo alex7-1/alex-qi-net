@@ -60,6 +60,9 @@
     .submit-card { margin-top: 16px; padding: 20px 22px; border: 1px solid #dce6f1; border-radius: 16px; background: white; box-shadow: 0 5px 18px #163a6509; }
     .submit-card strong { display: block; font-size: 15px; }
     .submit-card p { margin: 5px 0 14px; color: #70859a; font-size: 12px; line-height: 1.6; }
+    .consent-row { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0; padding: 12px 13px; border: 1px solid #dce6f1; border-radius: 11px; background: #f7faff; color: #40566c; font-size: 12px; line-height: 1.6; cursor: pointer; }
+    .consent-row input { flex: 0 0 auto; width: 18px; height: 18px; margin: 2px 0 0; accent-color: #1559a4; }
+    .consent-row span { color: #40566c; font-size: 12px; font-weight: 500; }
     .primary { width: 100%; min-height: 48px; padding: 10px 16px; border: 0; border-radius: 10px; background: #1559a4; color: white; font-weight: 800; cursor: pointer; }
     .primary:hover { background: #0d4b90; }
     .primary:disabled { opacity: .65; cursor: wait; }
@@ -119,7 +122,13 @@
           <input name="placeId" type="hidden">
           <div class="address-assist"><p class="address-status" id="address-status" role="status">输入邮编、城市或街道，可从匹配的德国地址中选择；也可手动填写。</p><div class="address-suggestions hidden" id="address-suggestions" aria-label="德国地址建议"></div></div>
         </section>
-        <div class="submit-card"><strong>准备好了</strong><p>提交后，所选套餐的安全链接会自动发送到你的邮箱；Alex 会通过微信或手机号核对地址、最终价格和办理条件。这里不是运营商的签约页面。</p><button class="primary" id="submit-button" type="submit">提交并发送套餐链接 →</button><p class="error" id="form-error" role="alert"></p></div>
+        <div class="submit-card">
+          <strong>准备好了</strong>
+          <p>提交后，所选套餐的安全链接会自动发送到你的邮箱；Alex 会通过微信或手机号核对地址、最终价格和办理条件。这里不是运营商的签约页面。</p>
+          <label class="consent-row"><input name="emailServiceConsent" type="checkbox" required><span>我同意小Q使用上述邮箱向我发送本次所选套餐链接及办理相关的一次性服务邮件。此同意不包含营销邮件或合同到期提醒；合同到期提醒需要另行确认。</span></label>
+          <button class="primary" id="submit-button" type="submit">提交并发送套餐链接 →</button>
+          <p class="error" id="form-error" role="alert"></p>
+        </div>
       </form>
     </div>
 
@@ -295,15 +304,17 @@
       const email = form.elements.email.value.trim().toLowerCase();
       const phone = form.elements.phone.value.trim();
       const wechatId = form.elements.wechatId.value.trim();
+      const emailServiceConsent = form.elements.emailServiceConsent.checked;
       const postcode = form.elements.postcode.value.trim();
       if (!lastName || !firstName) { error.textContent = '请分别填写姓和名。'; return; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = '请填写有效的电子邮箱。'; form.elements.email.focus(); return; }
       if (phone && !/^\+?[0-9][0-9\s()/-]{5,}$/.test(phone)) { error.textContent = '请填写有效的手机号，或将手机号留空。'; form.elements.phone.focus(); return; }
       if (!wechatId) { error.textContent = '请填写微信号。'; form.elements.wechatId.focus(); return; }
+      if (!emailServiceConsent) { error.textContent = '请确认同意接收本次套餐链接服务邮件。'; form.elements.emailServiceConsent.focus(); return; }
       if (!/^\d{5}$/.test(postcode)) { error.textContent = '请填写 5 位德国邮编。'; form.elements.postcode.focus(); return; }
       const payload = {
         source: 'network-application', submissionId, lastName, firstName, customerName: `${lastName} ${firstName}`,
-        email, phone, wechatId, contactInfo: phone || email,
+        email, phone, wechatId, emailServiceConsent, contactInfo: phone || email,
         postcode, city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim(), houseNumber: form.elements.houseNumber.value.trim(), placeId: form.elements.placeId.value,
         selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
         selectedOfferProvider: selectedOffer ? String(selectedOffer.provider) : '',
