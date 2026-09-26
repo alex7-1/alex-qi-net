@@ -32,6 +32,7 @@
     .summary .plan-price { margin: 17px 0 0; font-size: 13px; }
     .summary .plan-price strong { font-size: 23px; }
     .summary a { display: inline-block; margin-top: 11px; color: white; font-size: 12px; font-weight: 750; }
+    .summary .field-note { color: #dcecff; }
     .card { margin-top: 16px; padding: 22px; border: 1px solid #dce6f1; border-radius: 18px; background: white; box-shadow: 0 5px 18px #163a6509; }
     .card-title { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
     .section-number { display: grid; place-items: center; flex: 0 0 31px; height: 31px; border-radius: 10px; background: #e8f3ff; color: #1559a4; font-size: 13px; font-weight: 800; }
@@ -93,7 +94,8 @@
       <section class="summary hidden" id="selected-plan" aria-label="已选套餐">
         <p class="summary-kicker">已选宽带套餐</p><h2 id="plan-provider"></h2><p id="plan-name"></p>
         <div class="plan-chips" id="plan-chips"></div><p class="plan-price">前 24 个月折算月均 <strong id="plan-price"></strong></p>
-        <a class="hidden" id="plan-source" target="_blank" rel="noopener noreferrer">查看 CHECK24 原报价 ↗</a>
+        <a class="hidden" id="plan-source" target="_blank" rel="noopener noreferrer">前往 CHECK24 比较并办理 ↗</a>
+        <p class="field-note">办理入口打开 CHECK24 宽带比较页，请重新确认地址与套餐，价格及优惠以该页面为准。</p>
       </section>
 
       <form id="application-form">
@@ -108,7 +110,7 @@
             <label><span>手机号（选填）</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="60" placeholder="例如 +49 170 1234567"></label>
           </div>
           <label class="contact-field"><span>微信号 *</span><input name="wechatId" autocomplete="nickname" maxlength="100" required placeholder="请输入微信号"></label>
-          <p class="field-note">邮箱用于自动接收所选套餐链接；手机号和微信用于 Alex 联系你核对办理条件。</p>
+          <p class="field-note">邮箱用于自动接收套餐摘要和办理入口；手机号和微信用于 Alex 联系你核对办理条件。</p>
         </section>
 
         <section class="card" aria-labelledby="address-heading">
@@ -168,7 +170,7 @@
             const source = new URL(String(value.sourceUrl || ''));
             if (source.protocol === 'https:' && source.hostname === 'internet.check24.de' && source.pathname.startsWith('/tariff/')) {
               const link = document.querySelector('#plan-source');
-              link.href = source.href;
+              link.href = 'https://a.check24.net/misc/click.php?pid=133273&aid=18&deep=dsl-anbieterwechsel&cat=4';
               link.classList.remove('hidden');
             }
           } catch { /* The selected plan remains visible without an invalid link. */ }
@@ -347,7 +349,7 @@
         const customerLinkSent = result.customerEmail?.status === 'sent';
         if (result.saved === true) {
           document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
-            ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐链接已发送到 ${email}；Alex 会通过微信或手机号联系你核对最终条件。`
+            ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；进入 CHECK24 后请重新确认地址与套餐。Alex 会通过微信或手机号联系你核对最终条件。`
             : selectedOffer
               ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；套餐邮件暂未发出，Alex 会通过微信或手机号联系你，请勿重复提交。`
               : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
