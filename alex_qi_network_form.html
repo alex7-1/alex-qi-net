@@ -93,9 +93,9 @@
     <div id="application-view">
       <section class="summary hidden" id="selected-plan" aria-label="已选套餐">
         <p class="summary-kicker">已选宽带套餐</p><h2 id="plan-provider"></h2><p id="plan-name"></p>
-        <div class="plan-chips" id="plan-chips"></div><p class="plan-price">前 24 个月折算月均 <strong id="plan-price"></strong></p>
+        <div class="plan-chips" id="plan-chips"></div><p class="plan-price"><span id="plan-price-label">前 24 个月折算月均</span> <strong id="plan-price"></strong></p>
         <a class="hidden" id="plan-source" target="_blank" rel="noopener noreferrer">前往 CHECK24 比较并办理 ↗</a>
-        <p class="field-note">办理入口打开 CHECK24 宽带比较页，请重新确认地址与套餐，价格及优惠以该页面为准。</p>
+        <p class="field-note" id="plan-note">办理入口打开 CHECK24 宽带比较页，请重新确认地址与套餐，价格及优惠以该页面为准。</p>
       </section>
 
       <form id="application-form">
@@ -126,7 +126,7 @@
         </section>
         <div class="submit-card">
           <strong>准备好了</strong>
-          <p>提交后，所选套餐的安全链接会自动发送到你的邮箱；Alex 会通过微信或手机号核对地址、最终价格和办理条件。这里不是运营商的签约页面。</p>
+          <p id="submit-note">提交后，套餐摘要和办理入口会发送到你的邮箱；Alex 会联系你确认地址、价格和办理条件。提交不代表签约。</p>
           <label class="consent-row"><input name="emailServiceConsent" type="checkbox" required><span>我同意小Q使用上述邮箱向我发送本次所选套餐链接及办理相关的一次性服务邮件。此同意不包含营销邮件或合同到期提醒；合同到期提醒需要另行确认。</span></label>
           <button class="primary" id="submit-button" type="submit">提交并发送套餐链接 →</button>
           <p class="error" id="form-error" role="alert"></p>
@@ -141,6 +141,7 @@
     const submitButton = document.querySelector('#submit-button');
     const error = document.querySelector('#form-error');
     let selectedOffer = null;
+    const isNetAachen = () => selectedOffer?.sourceType === 'netaachen' && selectedOffer?.provider === 'NetAachen';
     const submissionKey = 'alex-qi-network-application-id';
     let submissionId = `network-${crypto.randomUUID()}`;
     try {
@@ -161,6 +162,14 @@
         document.querySelector('#plan-provider').textContent = value.provider;
         document.querySelector('#plan-name').textContent = value.name;
         document.querySelector('#plan-price').textContent = `${value.monthly} €`;
+        if (isNetAachen()) {
+          document.querySelector('#plan-price-label').textContent = '套餐折算月均';
+          document.querySelector('#plan-note').textContent = 'NetAachen 官网套餐。设备及运输费用由 Alex 确认，最终费用以 NetAachen 确认为准。';
+          document.querySelector('#submit-note').textContent = '提交后，你会收到套餐摘要邮件。Alex 会联系你确认费用、学生优惠资格（如适用）和安装安排。提交不代表签约。';
+          document.querySelector('.contact-field + .field-note').textContent = '邮箱用于接收套餐摘要，Alex 会通过微信或手机号联系你。';
+          document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
+          submitButton.textContent = '提交办理意向 →';
+        }
         const chips = [value.speed + ' Mbit/s', value.technology, '24 个月', value.hasOwnRouter === '有' ? '自备路由器' : '需要路由器'];
         document.querySelector('#plan-chips').replaceChildren(...chips.map((item) => {
           const span = document.createElement('span'); span.textContent = item; return span;
@@ -323,10 +332,10 @@
         selectedOfferTechnology: selectedOffer ? String(selectedOffer.technology) : '',
         selectedOfferDuration: 24,
         selectedSpeed: selectedOffer ? String(selectedOffer.speed) : '',
-        selectedOfferMonthly: selectedOffer ? `${selectedOffer.monthly} € / 月（折算价）` : '',
-        selectedOfferTotal: selectedOffer ? `${selectedOffer.total24} € / 24 个月（参考）` : '',
+        selectedOfferMonthly: selectedOffer ? `${selectedOffer.monthly} € / 月（${isNetAachen() ? '套餐折算价，设备费用另计' : '折算价'}）` : '',
+        selectedOfferTotal: selectedOffer ? `${selectedOffer.total24} € / 24 个月（${isNetAachen() ? '套餐费用含开通费，设备及运输费用另计' : '参考'}）` : '',
         comparisonSnapshotDate: selectedOffer ? String(selectedOffer.snapshotDate || '') : '',
-        selectedOfferSource: selectedOffer?.sourceType === 'check24' ? 'check24' : 'operator',
+        selectedOfferSource: isNetAachen() ? 'netaachen' : selectedOffer?.sourceType === 'check24' ? 'check24' : 'operator',
         selectedOfferSourceUrl: selectedOffer?.sourceType === 'check24' ? String(selectedOffer.sourceUrl || '') : '',
         youngStatus: selectedOffer ? String(selectedOffer.youngStatus || '') : '',
         isStudent: ['student', 'azubi'].includes(selectedOffer?.youngStatus) ? '是' : '',
@@ -349,7 +358,9 @@
         const customerLinkSent = result.customerEmail?.status === 'sent';
         if (result.saved === true) {
           document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
-            ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；进入 CHECK24 后请重新确认地址与套餐。Alex 会通过微信或手机号联系你核对最终条件。`
+            ? isNetAachen()
+              ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要已发送到 ${email}，Alex 会联系你确认费用和安装安排。`
+              : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；进入 CHECK24 后请重新确认地址与套餐。Alex 会通过微信或手机号联系你核对最终条件。`
             : selectedOffer
               ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；套餐邮件暂未发出，Alex 会通过微信或手机号联系你，请勿重复提交。`
               : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
@@ -364,7 +375,7 @@
         if (failure.message.startsWith('请')) {
           error.textContent = failure.message;
           submitButton.disabled = false;
-          submitButton.textContent = '提交并发送套餐链接 →';
+          submitButton.textContent = isNetAachen() ? '提交办理意向 →' : '提交并发送套餐链接 →';
         } else {
           error.textContent = '暂时无法确认是否送达。请勿重复提交，先联系 Alex 核对。';
         }
