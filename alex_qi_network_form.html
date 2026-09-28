@@ -337,6 +337,8 @@
         comparisonSnapshotDate: selectedOffer ? String(selectedOffer.snapshotDate || '') : '',
         selectedOfferSource: isNetAachen() ? 'netaachen' : selectedOffer?.sourceType === 'check24' ? 'check24' : 'operator',
         selectedOfferSourceUrl: selectedOffer?.sourceType === 'check24' ? String(selectedOffer.sourceUrl || '') : '',
+        selectedLinkVersion: 1,
+        selectedPrice: selectedOffer ? Number(selectedOffer.monthly) : null,
         youngStatus: selectedOffer ? String(selectedOffer.youngStatus || '') : '',
         isStudent: ['student', 'azubi'].includes(selectedOffer?.youngStatus) ? '是' : '',
         hasOwnRouter: selectedOffer ? String(selectedOffer.hasOwnRouter || '') : '',
@@ -349,7 +351,7 @@
           ? 'https://alexqi01.jidingding.cn/api/public/network-intake' : '/api/public/network-intake';
         const response = await fetch(endpoint, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'omit',
-          body: JSON.stringify(payload), signal: AbortSignal.timeout(20000)
+          body: JSON.stringify(payload), signal: AbortSignal.timeout(90000)
         });
         const result = await response.json().catch(() => ({}));
         if (response.status >= 400 && response.status < 500 && response.status !== 429) {
@@ -360,7 +362,7 @@
           document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
             ? isNetAachen()
               ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要已发送到 ${email}，Alex 会联系你确认费用和安装安排。`
-              : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；进入 CHECK24 后请重新确认地址与套餐。Alex 会通过微信或手机号联系你核对最终条件。`
+              : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；链接打开时核对所选套餐并带入安装地址。请在 CHECK24 核对个人资料和最终合同条件。`
             : selectedOffer
               ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；套餐邮件暂未发出，Alex 会通过微信或手机号联系你，请勿重复提交。`
               : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
