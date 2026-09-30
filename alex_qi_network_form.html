@@ -142,6 +142,14 @@
     const error = document.querySelector('#form-error');
     let selectedOffer = null;
     const isNetAachen = () => selectedOffer?.sourceType === 'netaachen' && selectedOffer?.provider === 'NetAachen';
+    // Operator direct channels (not CHECK24); the server re-checks the same link patterns.
+    const operatorChannels = [
+      { brand: 'Telekom', pattern: /^https:\/\/telekom\.anschlussberater\.de\/rPHL3Rj0X7NHTdo4\/-\/telekom-ebiz-tho\/tariffs\/[a-z0-9-]+$/ },
+      { brand: 'Vodafone', pattern: /^https:\/\/highspeed\.deals\/203378015\/festnetz\/[a-z0-9-]+\/$/ },
+      { brand: 'O2', pattern: /^https:\/\/eshop-haendler\.de\/qualitypartner-beconnected\/festnetz-tarife\/o2\/[a-z0-9-]+$/ }
+    ];
+    const isOperatorChannel = () => selectedOffer?.sourceType === 'operator' && operatorChannels.some((channel) =>
+      String(selectedOffer.provider || '').startsWith(channel.brand) && channel.pattern.test(String(selectedOffer.sourceUrl || '')));
     const scenarios = {
       switch: { label: '更换现有合同', note: '你选择的是更换现有合同，Alex 会和你核对现有合同的到期时间和解约方式。' },
       move: { label: '搬家', note: '你选择的是搬家，Alex 会和你核对旧地址的合同怎么处理，以及新地址的开通时间。' }
@@ -173,6 +181,17 @@
           document.querySelector('#submit-note').textContent = '提交后，你会收到套餐摘要邮件。Alex 会联系你确认费用、学生优惠资格（如适用）和安装安排。提交不代表签约。';
           document.querySelector('.contact-field + .field-note').textContent = '邮箱用于接收套餐摘要，Alex 会通过微信或手机号联系你。';
           document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
+          submitButton.textContent = '提交办理意向 →';
+        }
+        if (isOperatorChannel()) {
+          const channelName = String(value.channelName || '').slice(0, 80);
+          const link = document.querySelector('#plan-source');
+          link.href = value.sourceUrl;
+          link.textContent = `打开 ${channelName} 自助办理 ↗`;
+          link.classList.remove('hidden');
+          document.querySelector('#plan-note').textContent = `运营商直营渠道报价（${channelName}），不是 CHECK24 报价，CHECK24 返现不适用。可以点上面的链接自己下单（需重新输入安装地址），也可以提交后等 Alex 联系你。`;
+          document.querySelector('#submit-note').textContent = '提交后，套餐摘要和自助办理链接会发送到你的邮箱；Alex 会联系你确认地址、价格和办理条件。提交不代表签约。';
+          document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要、自助办理链接和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
           submitButton.textContent = '提交办理意向 →';
         }
         const scenario = scenarios[broadbandScenario()];
@@ -344,6 +363,7 @@
         comparisonSnapshotDate: selectedOffer ? String(selectedOffer.snapshotDate || '') : '',
         selectedOfferSource: isNetAachen() ? 'netaachen' : selectedOffer?.sourceType === 'check24' ? 'check24' : 'operator',
         selectedOfferSourceUrl: selectedOffer?.sourceType === 'check24' ? String(selectedOffer.sourceUrl || '') : '',
+        selectedOfferChannelUrl: isOperatorChannel() ? String(selectedOffer.sourceUrl) : '',
         selectedLinkVersion: 1,
         selectedPrice: selectedOffer ? Number(selectedOffer.monthly) : null,
         youngStatus: selectedOffer ? String(selectedOffer.youngStatus || '') : '',
@@ -370,7 +390,9 @@
           document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
             ? isNetAachen()
               ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要已发送到 ${email}，Alex 会联系你确认费用和安装安排。`
-              : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；链接打开时核对所选套餐并带入安装地址。请在 CHECK24 核对个人资料和最终合同条件。`
+              : isOperatorChannel()
+                ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和自助办理链接已发送到 ${email}；可以自己下单，也可以等 Alex 联系你。`
+                : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；链接打开时核对所选套餐并带入安装地址。请在 CHECK24 核对个人资料和最终合同条件。`
             : selectedOffer
               ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；套餐邮件暂未发出，Alex 会通过微信或手机号联系你，请勿重复提交。`
               : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
@@ -385,7 +407,7 @@
         if (failure.message.startsWith('请')) {
           error.textContent = failure.message;
           submitButton.disabled = false;
-          submitButton.textContent = isNetAachen() ? '提交办理意向 →' : '提交并发送套餐链接 →';
+          submitButton.textContent = isNetAachen() || isOperatorChannel() ? '提交办理意向 →' : '提交并发送套餐链接 →';
         } else {
           error.textContent = '暂时无法确认是否送达。请勿重复提交，先联系 Alex 核对。';
         }
