@@ -142,6 +142,11 @@
     const error = document.querySelector('#form-error');
     let selectedOffer = null;
     const isNetAachen = () => selectedOffer?.sourceType === 'netaachen' && selectedOffer?.provider === 'NetAachen';
+    const scenarios = {
+      switch: { label: '更换现有合同', note: '你选择的是更换现有合同，Alex 会和你核对现有合同的到期时间和解约方式。' },
+      move: { label: '搬家', note: '你选择的是搬家，Alex 会和你核对旧地址的合同怎么处理，以及新地址的开通时间。' }
+    };
+    const broadbandScenario = () => ['new', 'switch', 'move'].includes(selectedOffer?.customerType) ? selectedOffer.customerType : '';
     const submissionKey = 'alex-qi-network-application-id';
     let submissionId = `network-${crypto.randomUUID()}`;
     try {
@@ -170,7 +175,9 @@
           document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
           submitButton.textContent = '提交办理意向 →';
         }
-        const chips = [value.speed + ' Mbit/s', value.technology, '24 个月', value.hasOwnRouter === '有' ? '自备路由器' : '需要路由器'];
+        const scenario = scenarios[broadbandScenario()];
+        if (scenario) document.querySelector('#submit-note').textContent += ` ${scenario.note}`;
+        const chips = [value.speed + ' Mbit/s', value.technology, '24 个月', value.hasOwnRouter === '有' ? '自备路由器' : '需要路由器', scenario?.label].filter(Boolean);
         document.querySelector('#plan-chips').replaceChildren(...chips.map((item) => {
           const span = document.createElement('span'); span.textContent = item; return span;
         }));
@@ -342,7 +349,8 @@
         youngStatus: selectedOffer ? String(selectedOffer.youngStatus || '') : '',
         isStudent: ['student', 'azubi'].includes(selectedOffer?.youngStatus) ? '是' : '',
         hasOwnRouter: selectedOffer ? String(selectedOffer.hasOwnRouter || '') : '',
-        hasActiveO2Contract: selectedOffer ? String(selectedOffer.hasActiveO2Contract || '') : ''
+        hasActiveO2Contract: selectedOffer ? String(selectedOffer.hasActiveO2Contract || '') : '',
+        broadbandScenario: broadbandScenario()
       };
       submitButton.disabled = true;
       submitButton.textContent = '正在发送…';
