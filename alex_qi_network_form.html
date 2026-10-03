@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f9fd">
-  <title>小Q · 宽带办理信息</title>
+  <title>小Q · 领取宽带办理链接</title>
   <style>
     :root { font-family: "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; color: #17314e; background: #f2f6fb; }
     * { box-sizing: border-box; }
@@ -87,8 +87,8 @@
 <body>
   <main class="app">
     <div class="topbar"><a class="back" href="https://alexqi01.jidingding.cn/xiaoq-current/network-intake.html">返回套餐</a><span class="topbar-brand">小Q · 网费套餐</span></div>
-    <header class="heading"><span class="q-mark" aria-hidden="true">Q</span><div><p>小Q · 宽带办理</p><h1>填写办理信息</h1></div></header>
-    <nav class="steps" aria-label="办理步骤"><span>1 安装地址</span><span>2 上网需求</span><span>3 查看套餐</span><span class="active">4 填写资料</span></nav>
+    <header class="heading"><span class="q-mark" aria-hidden="true">Q</span><div><p>小Q · 宽带套餐</p><h1 id="form-title">领取办理链接</h1></div></header>
+    <nav class="steps" aria-label="步骤"><span>1 安装地址</span><span>2 上网需求</span><span>3 查看套餐</span><span class="active">4 留下联系方式</span></nav>
 
     <div id="application-view">
       <section class="summary hidden" id="selected-plan" aria-label="已选套餐">
@@ -100,7 +100,7 @@
 
       <form id="application-form">
         <section class="card" aria-labelledby="contact-heading">
-          <div class="card-title"><span class="section-number">01</span><div><h2 id="contact-heading">联系人信息</h2><p>用于联系你确认宽带办理条件</p></div></div>
+          <div class="card-title"><span class="section-number">01</span><div><h2 id="contact-heading">联系人信息</h2><p>邮箱接收套餐摘要和办理链接，微信用于 Alex 联系你</p></div></div>
           <div class="grid">
             <label><span>姓 *</span><input name="lastName" autocomplete="family-name" maxlength="50" required placeholder="请输入姓"></label>
             <label><span>名 *</span><input name="firstName" autocomplete="given-name" maxlength="50" required placeholder="请输入名"></label>
@@ -110,7 +110,7 @@
             <label><span>手机号（选填）</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="60" placeholder="例如 +49 170 1234567"></label>
           </div>
           <label class="contact-field"><span>微信号 *</span><input name="wechatId" autocomplete="nickname" maxlength="100" required placeholder="请输入微信号"></label>
-          <p class="field-note">邮箱用于自动接收套餐摘要和办理入口；手机号和微信用于 Alex 联系你核对办理条件。</p>
+          <p class="field-note">邮箱用于自动接收套餐摘要和办理链接；手机号和微信用于 Alex 联系你核对。</p>
         </section>
 
         <section class="card" aria-labelledby="address-heading">
@@ -126,15 +126,15 @@
         </section>
         <div class="submit-card">
           <strong>准备好了</strong>
-          <p id="submit-note">提交后，套餐摘要和办理入口会发送到你的邮箱；Alex 会联系你确认地址、价格和办理条件。提交不代表签约。</p>
+          <p id="submit-note">这项业务由 CHECK24 办理，不在小Q办理。提交后，套餐摘要和 CHECK24 办理链接会发到你的邮箱；你打开链接，在 CHECK24 官网核对后自己提交订单。Alex 会通过微信联系你核对地址和价格。这一步不是办理，也不代表签约。</p>
           <label class="consent-row"><input name="emailServiceConsent" type="checkbox" required><span>我同意小Q使用上述邮箱向我发送本次所选套餐链接及办理相关的一次性服务邮件。此同意不包含营销邮件或合同到期提醒；合同到期提醒需要另行确认。</span></label>
-          <button class="primary" id="submit-button" type="submit">提交并发送套餐链接 →</button>
+          <button class="primary" id="submit-button" type="submit">把办理链接发到我的邮箱 →</button>
           <p class="error" id="form-error" role="alert"></p>
         </div>
       </form>
     </div>
 
-    <section class="card success hidden" id="success-view" aria-live="polite"><span class="q-mark" aria-hidden="true">Q</span><h2>办理意向已发送</h2><p id="success-message">请查收套餐链接邮件；Alex 会通过微信或手机号联系你，核对最终价格、线路覆盖与办理条件。</p><a class="primary" href="https://alexqi01.jidingding.cn/xiaoq-current/network-intake.html">返回小Q宽带比价</a></section>
+    <section class="card success hidden" id="success-view" aria-live="polite"><span class="q-mark" aria-hidden="true">Q</span><h2 id="success-title">已收到你的信息</h2><p id="success-message">请查收套餐链接邮件；Alex 会通过微信或手机号联系你，核对最终价格、线路覆盖与办理条件。</p><a class="primary" href="https://alexqi01.jidingding.cn/xiaoq-current/network-intake.html">返回小Q宽带比价</a></section>
   </main>
   <script>
     const form = document.querySelector('#application-form');
@@ -181,6 +181,7 @@
           document.querySelector('#submit-note').textContent = '提交后，你会收到套餐摘要邮件。Alex 会联系你确认费用、学生优惠资格（如适用）和安装安排。提交不代表签约。';
           document.querySelector('.contact-field + .field-note').textContent = '邮箱用于接收套餐摘要，Alex 会通过微信或手机号联系你。';
           document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
+          document.querySelector('#form-title').textContent = '提交给 Alex 跟进';
           submitButton.textContent = '提交办理意向 →';
         }
         if (isOperatorChannel()) {
@@ -190,9 +191,10 @@
           link.textContent = `打开 ${channelName} 自助办理 ↗`;
           link.classList.remove('hidden');
           document.querySelector('#plan-note').textContent = `运营商直营渠道报价（${channelName}），不是 CHECK24 报价，CHECK24 返现不适用。可以点上面的链接自己下单（需重新输入安装地址），也可以提交后等 Alex 联系你。`;
-          document.querySelector('#submit-note').textContent = '提交后，套餐摘要和自助办理链接会发送到你的邮箱；Alex 会联系你确认地址、价格和办理条件。提交不代表签约。';
+          document.querySelector('#submit-note').textContent = `提交后，套餐摘要和 ${channelName} 自助办理链接会发送到你的邮箱。下单在 ${channelName} 页面完成，不在小Q办理；Alex 也会联系你确认地址、价格和办理条件。这一步不代表签约。`;
           document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要、自助办理链接和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
-          submitButton.textContent = '提交办理意向 →';
+          document.querySelector('#form-title').textContent = '领取自助办理链接';
+          submitButton.textContent = '把自助办理链接发到我的邮箱 →';
         }
         const scenario = scenarios[broadbandScenario()];
         if (scenario) document.querySelector('#submit-note').textContent += ` ${scenario.note}`;
@@ -214,6 +216,12 @@
       } catch { selectedOffer = null; }
       history.replaceState(null, '', location.pathname + location.search);
     }
+    if (!selectedOffer) {
+      document.querySelector('#form-title').textContent = '提交给 Alex 跟进';
+      document.querySelector('#submit-note').textContent = '你还没有选择套餐，这次不会发送办理链接。提交后 Alex 会通过微信或手机号联系你核对可用宽带。这一步不代表签约。';
+      submitButton.textContent = '提交给 Alex →';
+    }
+    const idleSubmitLabel = submitButton.textContent;
 
     const addressFields = ['postcode', 'city', 'streetName'];
     const addressStatus = document.querySelector('#address-status');
@@ -387,12 +395,15 @@
         }
         const customerLinkSent = result.customerEmail?.status === 'sent';
         if (result.saved === true) {
+          if (selectedOffer && customerLinkSent && !isNetAachen()) {
+            document.querySelector('#success-title').textContent = isOperatorChannel() ? '自助办理链接已发到你的邮箱' : '办理链接已发到你的邮箱';
+          }
           document.querySelector('#success-message').textContent = selectedOffer && customerLinkSent
             ? isNetAachen()
               ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要已发送到 ${email}，Alex 会联系你确认费用和安装安排。`
               : isOperatorChannel()
-                ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和自助办理链接已发送到 ${email}；可以自己下单，也可以等 Alex 联系你。`
-                : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和办理入口已发送到 ${email}；链接打开时核对所选套餐并带入安装地址。请在 CHECK24 核对个人资料和最终合同条件。`
+                ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和自助办理链接已发送到 ${email}。下单在 ${String(selectedOffer.channelName || '渠道').slice(0, 80)} 页面完成，不在小Q办理；可以自己下单，也可以等 Alex 联系你。`
+                : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和 CHECK24 办理链接已发送到 ${email}。现在还没有办理：请打开邮件，点链接进入 CHECK24 官网，核对套餐和个人资料后自己提交订单。看不懂的页面可以截图问 Alex。`
             : selectedOffer
               ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；套餐邮件暂未发出，Alex 会通过微信或手机号联系你，请勿重复提交。`
               : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
@@ -407,7 +418,7 @@
         if (failure.message.startsWith('请')) {
           error.textContent = failure.message;
           submitButton.disabled = false;
-          submitButton.textContent = isNetAachen() || isOperatorChannel() ? '提交办理意向 →' : '提交并发送套餐链接 →';
+          submitButton.textContent = idleSubmitLabel;
         } else {
           error.textContent = '暂时无法确认是否送达。请勿重复提交，先联系 Alex 核对。';
         }
