@@ -185,12 +185,9 @@
           submitButton.textContent = '提交办理意向 →';
         }
         if (isOperatorChannel()) {
+          // The channel link only goes out by mail after the request is saved to Alex's CRM (D-046).
           const channelName = String(value.channelName || '').slice(0, 80);
-          const link = document.querySelector('#plan-source');
-          link.href = value.sourceUrl;
-          link.textContent = `打开 ${channelName} 自助办理 ↗`;
-          link.classList.remove('hidden');
-          document.querySelector('#plan-note').textContent = `运营商直营渠道报价（${channelName}），不是 CHECK24 报价，CHECK24 返现不适用。可以点上面的链接自己下单（需重新输入安装地址），也可以提交后等 Alex 联系你。`;
+          document.querySelector('#plan-note').textContent = `运营商直营渠道报价（${channelName}），不是 CHECK24 报价，CHECK24 返现不适用。提交后自助办理链接会发到你的邮箱（打开后需重新输入安装地址），也可以等 Alex 联系你。`;
           document.querySelector('#submit-note').textContent = `提交后，套餐摘要和 ${channelName} 自助办理链接会发送到你的邮箱。下单在 ${channelName} 页面完成，不在小Q办理；Alex 也会联系你确认地址、价格和办理条件。这一步不代表签约。`;
           document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要、自助办理链接和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
           document.querySelector('#form-title').textContent = '领取自助办理链接';
