@@ -146,7 +146,8 @@
     const operatorChannels = [
       { brand: 'Telekom', pattern: /^https:\/\/telekom\.anschlussberater\.de\/rPHL3Rj0X7NHTdo4\/-\/telekom-ebiz-tho\/tariffs\/[a-z0-9-]+$/ },
       { brand: 'Vodafone', pattern: /^https:\/\/highspeed\.deals\/203378015\/festnetz\/[a-z0-9-]+\/$/ },
-      { brand: 'O2', pattern: /^https:\/\/eshop-haendler\.de\/qualitypartner-beconnected\/festnetz-tarife\/o2\/[a-z0-9-]+$/ }
+      { brand: 'O2', pattern: /^https:\/\/eshop-haendler\.de\/qualitypartner-beconnected\/festnetz-tarife\/o2\/[a-z0-9-]+$/ },
+      { brand: '1&1', pattern: /^https:\/\/dsl\.1und1\.de\/\?ps_id=P790913634$/ }
     ];
     const isOperatorChannel = () => selectedOffer?.sourceType === 'operator' && operatorChannels.some((channel) =>
       String(selectedOffer.provider || '').startsWith(channel.brand) && channel.pattern.test(String(selectedOffer.sourceUrl || '')));
