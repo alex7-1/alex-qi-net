@@ -64,6 +64,7 @@
     .consent-row { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0; padding: 12px 13px; border: 1px solid #dce6f1; border-radius: 11px; background: #f7faff; color: #40566c; font-size: 12px; line-height: 1.6; cursor: pointer; }
     .consent-row input { flex: 0 0 auto; width: 18px; height: 18px; margin: 2px 0 0; accent-color: #1559a4; }
     .consent-row span { color: #40566c; font-size: 12px; font-weight: 500; }
+    .renewal-row strong { display: block; margin-bottom: 2px; color: #17314e; font-size: 13px; }
     .primary { width: 100%; min-height: 48px; padding: 10px 16px; border: 0; border-radius: 10px; background: #1559a4; color: white; font-weight: 800; cursor: pointer; }
     .primary:hover { background: #0d4b90; }
     .primary:disabled { opacity: .65; cursor: wait; }
@@ -127,7 +128,8 @@
         <div class="submit-card">
           <strong>准备好了</strong>
           <p id="submit-note">这项业务由 CHECK24 办理，不在小Q办理。提交后，套餐摘要和 CHECK24 办理链接会发到你的邮箱；你打开链接，在 CHECK24 官网核对后自己提交订单。Alex 会通过微信联系你核对地址和价格。这一步不是办理，也不代表签约。</p>
-          <label class="consent-row"><input name="emailServiceConsent" type="checkbox" required><span>我同意小Q使用上述邮箱向我发送本次所选套餐链接及办理相关的一次性服务邮件。此同意不包含营销邮件或合同到期提醒；合同到期提醒需要另行确认。</span></label>
+          <label class="consent-row"><input name="emailServiceConsent" type="checkbox" required><span>我同意小Q使用上述邮箱向我发送本次所选套餐链接及办理相关的一次性服务邮件。此同意不包含营销邮件；合同到期提醒在下面单独选。</span></label>
+          <label class="consent-row renewal-row"><input name="renewalReminder" type="checkbox"><span><strong>到期前 3 个月提醒我更换（可选）</strong>到期前换一家，通常还能再拿一次新客户优惠（返现、首年低价），比自动续约更省钱；Alex 帮你算好解约和开通时间，新旧合同无缝衔接、不断网。只发这一封提醒邮件，邮件里可以一键退订。</span></label>
           <button class="primary" id="submit-button" type="submit">把办理链接发到我的邮箱 →</button>
           <p class="error" id="form-error" role="alert"></p>
         </div>
@@ -181,7 +183,7 @@
           document.querySelector('#plan-note').textContent = 'NetAachen 官网套餐。设备及运输费用由 Alex 确认，最终费用以 NetAachen 确认为准。';
           document.querySelector('#submit-note').textContent = '提交后，你会收到套餐摘要邮件。Alex 会联系你确认费用、学生优惠资格（如适用）和安装安排。提交不代表签约。';
           document.querySelector('.contact-field + .field-note').textContent = '邮箱用于接收套餐摘要，Alex 会通过微信或手机号联系你。';
-          document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
+          document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要和办理相关的一次性服务邮件。不包含营销邮件；到期提醒在下面单独选。';
           document.querySelector('#form-title').textContent = '提交给 Alex 跟进';
           submitButton.textContent = '提交办理意向 →';
         }
@@ -190,7 +192,7 @@
           const channelName = String(value.channelName || '').slice(0, 80);
           document.querySelector('#plan-note').textContent = `运营商直营渠道报价（${channelName}），不是 CHECK24 报价，CHECK24 返现不适用。提交后自助办理链接会发到你的邮箱（打开后需重新输入安装地址），也可以等 Alex 联系你。`;
           document.querySelector('#submit-note').textContent = `提交后，套餐摘要和 ${channelName} 自助办理链接会发送到你的邮箱。下单在 ${channelName} 页面完成，不在小Q办理；Alex 也会联系你确认地址、价格和办理条件。这一步不代表签约。`;
-          document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要、自助办理链接和办理相关的一次性服务邮件。不包含营销邮件或到期提醒。';
+          document.querySelector('.consent-row span').textContent = '我同意小Q保存本次办理意向，并向上述邮箱发送套餐摘要、自助办理链接和办理相关的一次性服务邮件。不包含营销邮件；到期提醒在下面单独选。';
           document.querySelector('#form-title').textContent = '领取自助办理链接';
           submitButton.textContent = '把自助办理链接发到我的邮箱 →';
         }
@@ -358,6 +360,8 @@
       const payload = {
         source: 'network-application', submissionId, lastName, firstName, customerName: `${lastName} ${firstName}`,
         email, phone, wechatId, emailServiceConsent, contactInfo: phone || email,
+        // D-080: separate, optional; one email about 3 months before the contract ends.
+        renewalReminder: form.elements.renewalReminder.checked,
         postcode, city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim(), houseNumber: form.elements.houseNumber.value.trim(), placeId: form.elements.placeId.value,
         selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
         selectedOfferProvider: selectedOffer ? String(selectedOffer.provider) : '',
