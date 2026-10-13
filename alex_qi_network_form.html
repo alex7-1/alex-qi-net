@@ -360,7 +360,7 @@
       const payload = {
         source: 'network-application', submissionId, lastName, firstName, customerName: `${lastName} ${firstName}`,
         email, phone, wechatId, emailServiceConsent, contactInfo: phone || email,
-        // D-080: separate, optional; one email about 3 months before the contract ends.
+        // D-081: separate, optional; one email about 3 months before the contract ends.
         renewalReminder: form.elements.renewalReminder.checked,
         postcode, city: form.elements.city.value.trim(), streetName: form.elements.streetName.value.trim(), houseNumber: form.elements.houseNumber.value.trim(), placeId: form.elements.placeId.value,
         selectedOffer: selectedOffer ? `${selectedOffer.provider} · ${selectedOffer.name} · ${selectedOffer.technology}` : '',
