@@ -115,12 +115,12 @@
         </section>
 
         <section class="card" aria-labelledby="address-heading">
-          <div class="card-title"><span class="section-number">02</span><div><h2 id="address-heading">安装地址</h2><p>选择匹配的德国地址，自动填入邮编、城市和街道；门牌号请自行填写</p></div></div>
+          <div class="card-title"><span class="section-number">02</span><div><h2 id="address-heading">安装地址</h2><p>选择匹配的德国地址，自动填入邮编、城市和街道；街道号请自行填写</p></div></div>
           <div class="grid">
             <label><span>邮编 *</span><input name="postcode" inputmode="numeric" maxlength="5" autocomplete="off" required placeholder="例如 52062"></label>
             <label><span>城市 *</span><input name="city" autocomplete="off" maxlength="80" required placeholder="例如 Aachen"></label>
             <label><span>街道 *</span><input name="streetName" autocomplete="off" maxlength="120" required placeholder="输入街道后选择建议"></label>
-            <label><span>门牌号 *</span><input name="houseNumber" autocomplete="off" maxlength="20" required placeholder="例如 40"></label>
+            <label><span>街道号 *</span><input name="houseNumber" autocomplete="off" maxlength="20" required placeholder="例如 40"></label>
           </div>
           <input name="placeId" type="hidden">
           <div class="address-assist"><p class="address-status" id="address-status" role="status">输入邮编、城市或街道，可从匹配的德国地址中选择；也可手动填写。</p><div class="address-suggestions hidden" id="address-suggestions" aria-label="德国地址建议"></div></div>
@@ -299,7 +299,7 @@
           suggestionsBox.append(attribution);
           suggestionsBox.classList.remove('hidden');
           addressStatus.textContent = data.provider === 'openplz'
-            ? '请选择邮编、城市和街道；门牌号请自行填写。'
+            ? '请选择邮编、城市和街道；街道号请自行填写。'
             : '请选择匹配的地址，系统会自动填入地址信息。';
         } else {
           addressStatus.textContent = data.message || '没有找到匹配地址，可继续输入或手动填写。';
@@ -330,14 +330,14 @@
         form.elements.houseNumber.value = address.houseNumber || '';
         form.elements.placeId.value = data.placeId || suggestion.placeId;
         addressStatus.textContent = data.provider === 'openplz'
-          ? '邮编、城市和街道已填入；请填写门牌号。'
-          : '地址已选择，请核对门牌号和其他信息。';
+          ? '邮编、城市和街道已填入；请填写街道号。'
+          : '地址已选择，请核对街道号和其他信息。';
         if (!form.elements.streetName.value) form.elements.streetName.focus();
         else if (!form.elements.houseNumber.value) form.elements.houseNumber.focus();
       } catch {
         if (revision !== addressRevision) return;
         form.elements.placeId.value = '';
-        addressStatus.textContent = '未能读取地址详情，请手动核对邮编、城市、街道和门牌号。';
+        addressStatus.textContent = '未能读取地址详情，请手动核对邮编、城市、街道和街道号。';
       }
     }
 
