@@ -140,6 +140,8 @@
   </main>
   <script>
     const form = document.querySelector('#application-form');
+    // Same words as the box above the button in the CHECK24 mail (Alex 2026-10-29, feedback #8: say the commission plainly).
+    const PARTNER_ONLY_NOTE = '小Q的中文服务免费，靠的是 CHECK24 付给我们的合作佣金。只有从邮件的按钮打开、在同一个浏览器里办完，CHECK24 才算是小Q介绍的；请不要自己去 CHECK24 网站或 App 另外下单，不然我们查不到你的订单，之后有问题就没法帮你咨询了。';
     const submitButton = document.querySelector('#submit-button');
     const error = document.querySelector('#form-error');
     let selectedOffer = null;
@@ -404,7 +406,7 @@
               ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要已发送到 ${email}，Alex 会联系你确认费用和安装安排。`
               : isOperatorChannel()
                 ? `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和自助办理链接已发送到 ${email}。下单在 ${String(selectedOffer.channelName || '渠道').slice(0, 80)} 页面完成，不在小Q办理；可以自己下单，也可以等 Alex 联系你。`
-                : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和 CHECK24 办理链接已发送到 ${email}。现在还没有办理：请打开邮件，点链接进入 CHECK24 官网，核对套餐和个人资料后自己提交订单。看不懂的页面可以截图问 Alex。`
+                : `${selectedOffer.provider} · ${selectedOffer.name}。套餐摘要和 CHECK24 办理链接已发送到 ${email}。现在还没有办理：请打开邮件，点链接进入 CHECK24 官网，核对套餐和个人资料后自己提交订单。看不懂的页面可以截图问 Alex。${PARTNER_ONLY_NOTE}`
             : selectedOffer
               ? `${selectedOffer.provider} · ${selectedOffer.name}。办理意向已收到；套餐邮件暂未发出，Alex 会通过微信或手机号联系你，请勿重复提交。`
               : `办理意向已收到。Alex 会通过微信或手机号联系你核对可用宽带；当前没有可发送的套餐链接。`;
