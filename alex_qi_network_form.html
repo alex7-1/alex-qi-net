@@ -140,6 +140,19 @@
   </main>
   <script>
     const form = document.querySelector('#application-form');
+    // Same line as apps/public-q/email-note.js in alex-qi-platform (Alex 2026-11-02, D-173): only someone typing an iCloud address sees it.
+    const ICLOUD_NOTE = 'iCloud 邮箱有时收不到我们的邮件，建议换一个（Gmail、QQ、163 都行）。用这个也可以，没收到就告诉小Q，换个邮箱重新发。';
+    const emailField = form.elements.email;
+    const icloudNote = document.createElement('small');
+    icloudNote.setAttribute('role', 'status');
+    icloudNote.style.cssText = 'display:block;margin-top:6px;font-size:13px;line-height:1.5;font-weight:400;color:#B45309';
+    icloudNote.textContent = ICLOUD_NOTE;
+    const syncIcloudNote = () => {
+      if (/@(?:icloud|me|mac)\.com\s*$/i.test(emailField.value)) emailField.after(icloudNote);
+      else icloudNote.remove();
+    };
+    emailField.addEventListener('input', syncIcloudNote);
+    emailField.addEventListener('change', syncIcloudNote);
     // Same words as the box above the button in the CHECK24 mail (Alex 2026-10-29, feedback #8: say the commission plainly).
     const PARTNER_ONLY_NOTE = '小Q的中文服务免费，靠的是 CHECK24 付给我们的合作佣金。只有从邮件的按钮打开、在同一个浏览器里办完，CHECK24 才算是小Q介绍的；请不要自己去 CHECK24 网站或 App 另外下单，不然我们查不到你的订单，之后有问题就没法帮你咨询了。';
     const submitButton = document.querySelector('#submit-button');
