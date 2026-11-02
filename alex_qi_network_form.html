@@ -388,6 +388,7 @@
         selectedOfferSource: isNetAachen() ? 'netaachen' : selectedOffer?.sourceType === 'check24' ? 'check24' : 'operator',
         selectedOfferSourceUrl: selectedOffer?.sourceType === 'check24' ? String(selectedOffer.sourceUrl || '') : '',
         selectedOfferChannelUrl: isOperatorChannel() ? String(selectedOffer.sourceUrl) : '',
+        selectedOfferRouter: isOperatorChannel() ? String(selectedOffer.routerLabel || '') : '',
         selectedLinkVersion: 1,
         selectedPrice: selectedOffer ? Number(selectedOffer.monthly) : null,
         youngStatus: selectedOffer ? String(selectedOffer.youngStatus || '') : '',
